@@ -1,21 +1,23 @@
-# Kanban pessoal
+# Meu Kanban
 
-Quadro kanban simples, local e sem dependências. Um único arquivo HTML, sem build e sem servidor.
+Quadro Kanban pessoal, moderno e sem dependências externas. Um único arquivo `index.html`, sem build e sem servidor, pronto para publicar no GitHub Pages.
 
 ## Como usar
 
-Abra o `index.html` no navegador. Os dados ficam salvos no `localStorage` do próprio navegador.
+1. Abra o arquivo `index.html` diretamente no navegador (ou publique via GitHub Pages).
+2. Todos os dados são salvos automaticamente no `localStorage` do navegador.
 
 ## Recursos
 
-- Colunas editáveis (renomear, criar e excluir)
-- Cartões com título, notas, prioridade, prazo e coluna
-- Arrastar e soltar entre colunas e reordenar dentro delas
-- Busca por título e notas
-- Tema claro/escuro (segue o sistema, com alternância manual)
-- Exportar e importar o quadro em JSON (para backup)
+- **Visual inspirado no Kan (Claro e Escuro):** Alternância manual de tema com suporte automático à preferência do sistema.
+- **Colunas editáveis:** Criar, renomear, reordenar e excluir colunas livremente.
+- **Cartões completos:** Título, descrição/notas, etiquetas personalizadas, checklists, datas de entrega e prioridades.
+- **Arrastar e soltar (Drag & Drop):** Mova cartões entre colunas e reordene dentro da mesma lista.
+- **Busca e filtros:** Pesquisa rápida por título e conteúdo dos cartões.
+- **Backup em JSON:** Exporte e importe o estado completo do seu quadro a qualquer momento.
 
-## Observações
+## Publicar no GitHub Pages
 
-- Os dados ficam só neste navegador e neste computador. Use **Exportar** para fazer backup.
-- Para publicar no GitHub Pages, basta enviar a pasta para um repositório e ativar Pages na branch principal.
+1. Crie um repositório no GitHub e envie os arquivos (`index.html` e `README.md`).
+2. Acesse **Settings > Pages** no repositório.
+3. Em **Build and deployment > Branch**, selecione `main` e a pasta `/ (root)` e clique em **Save**.
