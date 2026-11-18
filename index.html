@@ -1,2537 +1,1817 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="pt-BR" class="dark">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Meu Kanban</title>
-<style>
-:root{
-  /* Kan Light Theme Palette */
-  --light-50:#fcfcfc;
-  --light-100:#f8f8f8;
-  --light-200:#f3f3f3;
-  --light-300:#ededed;
-  --light-400:#e8e8e8;
-  --light-500:#e2e2e2;
-  --light-600:#dbdbdb;
-  --light-700:#c7c7c7;
-  --light-800:#8f8f8f;
-  --light-900:#858585;
-  --light-950:#6f6f6f;
-  --light-1000:#171717;
-
-  --bg:var(--light-100);
-  --surface:var(--light-50);
-  --lane:var(--light-300);
-  --lane-border:var(--light-400);
-  --card:var(--light-50);
-  --card-hover:#ffffff;
-  --card-border:var(--light-300);
-  --ink:var(--light-1000);
-  --ink-soft:var(--light-950);
-  --mute:var(--light-800);
-  --line:var(--light-500);
-  --line-strong:var(--light-600);
-  --accent:#171717;
-  --accent-ink:#fcfcfc;
-  --danger:#dc2626;
-  --success:#16a34a;
-  --pattern-dot:#d4d4d4;
-  --shadow-modal:0 16px 48px rgba(0,0,0,.14), 0 2px 8px rgba(0,0,0,.06);
-  --shadow-pop:0 8px 24px rgba(0,0,0,.10), 0 1px 3px rgba(0,0,0,.06);
-  color-scheme:light;
-}
-@media (prefers-color-scheme:dark){
-  :root:not([data-theme="light"]){
-    --dark-50:#161616;
-    --dark-100:#1c1c1c;
-    --dark-200:#232323;
-    --dark-300:#282828;
-    --dark-400:#2e2e2e;
-    --dark-500:#343434;
-    --dark-600:#3e3e3e;
-    --dark-700:#505050;
-    --dark-800:#707070;
-    --dark-900:#7e7e7e;
-    --dark-950:#bbbbbb;
-    --dark-1000:#ededed;
-
-    --bg:var(--dark-50);
-    --surface:var(--dark-100);
-    --lane:var(--dark-100);
-    --lane-border:var(--dark-300);
-    --card:var(--dark-200);
-    --card-hover:var(--dark-300);
-    --card-border:var(--dark-300);
-    --ink:var(--dark-1000);
-    --ink-soft:var(--dark-950);
-    --mute:var(--dark-800);
-    --line:var(--dark-400);
-    --line-strong:var(--dark-600);
-    --accent:var(--dark-1000);
-    --accent-ink:var(--dark-50);
-    --danger:#ef4444;
-    --success:#22c55e;
-    --pattern-dot:#2c2c2c;
-    --shadow-modal:0 20px 60px rgba(0,0,0,.6);
-    --shadow-pop:0 10px 28px rgba(0,0,0,.45);
-    color-scheme:dark;
-  }
-}
-:root[data-theme="dark"]{
-  --dark-50:#161616;
-  --dark-100:#1c1c1c;
-  --dark-200:#232323;
-  --dark-300:#282828;
-  --dark-400:#2e2e2e;
-  --dark-500:#343434;
-  --dark-600:#3e3e3e;
-  --dark-700:#505050;
-  --dark-800:#707070;
-  --dark-900:#7e7e7e;
-  --dark-950:#bbbbbb;
-  --dark-1000:#ededed;
-
-  --bg:var(--dark-50);
-  --surface:var(--dark-100);
-  --lane:var(--dark-100);
-  --lane-border:var(--dark-300);
-  --card:var(--dark-200);
-  --card-hover:var(--dark-300);
-  --card-border:var(--dark-300);
-  --ink:var(--dark-1000);
-  --ink-soft:var(--dark-950);
-  --mute:var(--dark-800);
-  --line:var(--dark-400);
-  --line-strong:var(--dark-600);
-  --accent:var(--dark-1000);
-  --accent-ink:var(--dark-50);
-  --danger:#ef4444;
-  --success:#22c55e;
-  --pattern-dot:#2c2c2c;
-  --shadow-modal:0 20px 60px rgba(0,0,0,.6);
-  --shadow-pop:0 10px 28px rgba(0,0,0,.45);
-  color-scheme:dark;
-}
-
-*{box-sizing:border-box}
-html,body{height:100%;margin:0}
-body{
-  background-color:var(--bg);
-  background-image:radial-gradient(var(--pattern-dot) 0.75px, transparent 0.75px);
-  background-size:15px 15px;
-  color:var(--ink);
-  font:13.5px/1.45 -apple-system,BlinkMacSystemFont,"Inter","Segoe UI",Roboto,sans-serif;
-  display:flex;
-  flex-direction:column;
-  overflow:hidden;
-  -webkit-font-smoothing:antialiased;
-}
-button,input,textarea,select{font:inherit;color:inherit}
-button{cursor:pointer}
-:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
-
-/* Scrollbars estilo Kan */
-::-webkit-scrollbar{width:6px;height:6px}
-::-webkit-scrollbar-track{background:transparent}
-::-webkit-scrollbar-thumb{background:var(--line-strong);border-radius:4px}
-::-webkit-scrollbar-thumb:hover{background:var(--mute)}
-
-/* Top Header */
-header{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  padding:14px 24px;
-  flex-wrap:wrap;
-  z-index:10;
-}
-.board-title-wrap{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  margin-right:auto;
-  min-width:0;
-}
-#board-title{
-  font-size:1.15rem;
-  font-weight:700;
-  letter-spacing:-.02em;
-  background:transparent;
-  border:1px solid transparent;
-  border-radius:6px;
-  padding:3px 7px;
-  min-width:120px;
-  max-width:280px;
-}
-#board-title:hover,#board-title:focus{
-  background:var(--surface);
-  border-color:var(--line-strong);
-  outline:none;
-}
-.prefix-pill{
-  font-size:.72rem;
-  font-weight:600;
-  color:var(--mute);
-  background:var(--surface);
-  border:1px solid var(--line);
-  border-radius:5px;
-  padding:2px 6px;
-  cursor:pointer;
-  user-select:none;
-}
-.prefix-pill:hover{border-color:var(--line-strong);color:var(--ink)}
-
-/* Buttons */
-.btn{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  gap:6px;
-  background:var(--surface);
-  border:1px solid var(--line-strong);
-  border-radius:6px;
-  padding:5px 11px;
-  font-size:.82rem;
-  font-weight:600;
-  color:var(--ink);
-  white-space:nowrap;
-  transition:background .12s,border-color .12s,opacity .12s;
-}
-.btn:hover{background:var(--lane)}
-.btn.primary{
-  background:var(--accent);
-  color:var(--accent-ink);
-  border-color:var(--accent);
-}
-.btn.primary:hover{opacity:.9}
-.btn.ghost{
-  background:transparent;
-  border-color:transparent;
-  color:var(--ink-soft);
-}
-.btn.ghost:hover{background:var(--lane);color:var(--ink)}
-.btn.danger{color:var(--danger)}
-.btn.danger-solid{background:var(--danger);color:#fff;border-color:var(--danger)}
-.btn.sm{padding:4px 8px;font-size:.78rem}
-.btn.icon-btn{padding:5px 7px}
-
-.search-wrap{position:relative;display:flex;align-items:center}
-.search-wrap svg{position:absolute;left:9px;color:var(--mute);pointer-events:none}
-#search{
-  border:1px solid var(--line-strong);
-  background:var(--surface);
-  border-radius:6px;
-  padding:5px 10px 5px 28px;
-  width:190px;
-  font-size:.82rem;
-}
-#search::placeholder{color:var(--mute)}
-
-/* Filter & Trash badge */
-.rel{position:relative;display:inline-flex}
-.count-dot{
-  position:absolute;
-  top:-6px;
-  right:-6px;
-  min-width:17px;
-  height:17px;
-  padding:0 4px;
-  border-radius:999px;
-  background:var(--accent);
-  color:var(--accent-ink);
-  font-size:10px;
-  font-weight:700;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  border:2px solid var(--bg);
-  pointer-events:none;
-}
-
-/* Popover / Dropdown */
-.popover{
-  position:absolute;
-  top:calc(100% + 6px);
-  right:0;
-  min-width:220px;
-  max-height:360px;
-  overflow-y:auto;
-  background:var(--surface);
-  border:1px solid var(--line-strong);
-  border-radius:8px;
-  padding:5px;
-  box-shadow:var(--shadow-pop);
-  z-index:120;
-  display:none;
-}
-.popover.left{right:auto;left:0}
-.popover.open{display:block}
-.pop-title{
-  font-size:.72rem;
-  font-weight:700;
-  text-transform:uppercase;
-  letter-spacing:.04em;
-  color:var(--mute);
-  padding:6px 8px 4px;
-}
-.pop-item{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  width:100%;
-  background:transparent;
-  border:none;
-  border-radius:5px;
-  padding:6px 8px;
-  font-size:.82rem;
-  color:var(--ink);
-  text-align:left;
-}
-.pop-item:hover{background:var(--lane)}
-.pop-item input[type="checkbox"]{margin:0;accent-color:var(--accent)}
-.pop-sep{height:1px;background:var(--line);margin:4px 0}
-
-/* Board & Lists (Kan style: w-[18rem], rounded-md, clean headers) */
-main{
-  flex:1;
-  display:flex;
-  gap:16px;
-  padding:4px 24px 20px;
-  overflow-x:auto;
-  overflow-y:hidden;
-  align-items:flex-start;
-}
-.lane{
-  flex:0 0 288px;
-  width:288px;
-  max-height:100%;
-  display:flex;
-  flex-direction:column;
-  background:var(--lane);
-  border:1px solid var(--lane-border);
-  border-radius:8px;
-  padding:8px 6px 8px 8px;
-}
-.lane.dragging-lane{opacity:.45}
-.lane.lane-drop-target{outline:2px solid var(--accent);outline-offset:1px}
-.lane-head{
-  display:flex;
-  align-items:center;
-  gap:4px;
-  padding:2px 2px 8px 6px;
-  cursor:grab;
-}
-.lane-head:active{cursor:grabbing}
-.lane-title{
-  flex:1;
-  font-size:.88rem;
-  font-weight:600;
-  color:var(--ink);
-  background:transparent;
-  border:1px solid transparent;
-  border-radius:5px;
-  padding:3px 6px;
-  min-width:0;
-}
-.lane-title:hover,.lane-title:focus{
-  border-color:var(--line-strong);
-  background:var(--card);
-  outline:none;
-}
-.lane-count{
-  font-size:.74rem;
-  font-weight:600;
-  color:var(--mute);
-  padding:0 4px;
-}
-.lane-icon-btn{
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  width:26px;
-  height:26px;
-  border:none;
-  background:transparent;
-  color:var(--mute);
-  border-radius:5px;
-}
-.lane-icon-btn:hover{background:var(--line);color:var(--ink)}
-
-.cards{
-  flex:1;
-  overflow-y:auto;
-  padding:2px 4px 4px 0;
-  display:flex;
-  flex-direction:column;
-  gap:8px;
-  min-height:36px;
-}
-.lane.over .cards{
-  outline:1.5px dashed var(--mute);
-  outline-offset:-2px;
-  border-radius:6px;
-}
-
-/* Kan Card Style */
-.card{
-  background:var(--card);
-  border:1px solid var(--card-border);
-  border-radius:6px;
-  padding:9px 11px;
-  cursor:pointer;
-  word-break:break-word;
-  transition:background .12s,border-color .12s;
-  user-select:none;
-}
-.card:hover{
-  background:var(--card-hover);
-  border-color:var(--line-strong);
-}
-.card.dragging{opacity:.35}
-.card-num{
-  display:block;
-  font-size:.73rem;
-  font-weight:500;
-  color:var(--mute);
-  margin-bottom:3px;
-}
-.card-title{
-  font-size:.86rem;
-  font-weight:500;
-  color:var(--ink);
-  line-height:1.38;
-}
-.card-footer{
-  margin-top:8px;
-  display:flex;
-  flex-direction:column;
-  gap:7px;
-}
-.card-labels{
-  display:flex;
-  flex-wrap:wrap;
-  gap:4px;
-}
-/* Kan Badge */
-.badge{
-  display:inline-flex;
-  align-items:center;
-  gap:5px;
-  border-radius:999px;
-  padding:2px 8px;
-  font-size:10.5px;
-  font-weight:500;
-  color:var(--ink-soft);
-  border:1px solid var(--line-strong);
-  background:transparent;
-  line-height:1.3;
-}
-.badge-dot{
-  width:7px;
-  height:7px;
-  border-radius:50%;
-  flex-shrink:0;
-}
-.card-meta-row{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:6px;
-  min-height:20px;
-}
-.card-meta-left{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  color:var(--mute);
-  font-size:11px;
-}
-.meta-item{
-  display:inline-flex;
-  align-items:center;
-  gap:3px;
-}
-.meta-item.overdue{color:var(--danger);font-weight:600}
-.meta-item.done-due{color:var(--success)}
-
-/* Kan Checklist Circular Progress Pill */
-.cl-pill{
-  display:inline-flex;
-  align-items:center;
-  gap:5px;
-  border-radius:999px;
-  border:1px solid var(--line-strong);
-  padding:2px 7px;
-  font-size:10.5px;
-  font-weight:500;
-  color:var(--ink-soft);
-  margin-left:auto;
-}
-.cl-ring{transform:rotate(-90deg);display:block}
-.cl-ring-bg{stroke:var(--line-strong);fill:none}
-.cl-ring-fg{stroke:#3b82f6;fill:none;stroke-linecap:round;transition:stroke-dashoffset .25s}
-.cl-ring-fg.complete{stroke:#22c55e}
-
-.empty-lane{
-  color:var(--mute);
-  text-align:center;
-  padding:14px 8px;
-  font-size:.78rem;
-}
-.add-card-inline{
-  margin-top:4px;
-  margin-right:4px;
-  display:flex;
-  align-items:center;
-  gap:6px;
-  background:transparent;
-  border:none;
-  border-radius:5px;
-  padding:6px 8px;
-  color:var(--mute);
-  font-size:.8rem;
-  font-weight:500;
-  text-align:left;
-}
-.add-card-inline:hover{background:var(--line);color:var(--ink)}
-
-.new-lane-btn{
-  flex:0 0 260px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:6px;
-  border:1px dashed var(--line-strong);
-  background:transparent;
-  border-radius:8px;
-  padding:11px;
-  color:var(--mute);
-  font-size:.84rem;
-  font-weight:600;
-}
-.new-lane-btn:hover{color:var(--ink);border-color:var(--ink);background:var(--surface)}
-
-/* Context Menu */
-.ctx-menu{
-  position:fixed;
-  min-width:190px;
-  background:var(--surface);
-  border:1px solid var(--line-strong);
-  border-radius:8px;
-  padding:4px;
-  box-shadow:var(--shadow-pop);
-  z-index:300;
-  display:none;
-}
-.ctx-menu.open{display:block}
-
-/* Kan Card Detail Modal (2-column layout like Kan CardPage + CardRightPanel) */
-dialog{
-  border:1px solid var(--line-strong);
-  border-radius:10px;
-  background:var(--surface);
-  color:var(--ink);
-  padding:0;
-  box-shadow:var(--shadow-modal);
-  max-width:94vw;
-}
-dialog::backdrop{background:rgba(0,0,0,.55);backdrop-filter:blur(2px)}
-#card-dlg{
-  width:min(940px,95vw);
-  height:min(86vh,780px);
-}
-.modal-shell{
-  display:flex;
-  flex-direction:column;
-  height:100%;
-  overflow:hidden;
-}
-.modal-topbar{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:10px 20px;
-  border-bottom:1px solid var(--line);
-  background:var(--surface);
-  flex-shrink:0;
-}
-.breadcrumbs{
-  display:flex;
-  align-items:center;
-  gap:6px;
-  font-size:.8rem;
-  font-weight:600;
-  color:var(--ink-soft);
-}
-.breadcrumbs span.muted{color:var(--mute)}
-.modal-body{
-  display:flex;
-  flex:1;
-  overflow:hidden;
-}
-.modal-main{
-  flex:1;
-  overflow-y:auto;
-  padding:24px 32px 40px;
-}
-.modal-side{
-  width:290px;
-  flex-shrink:0;
-  border-left:1px solid var(--line);
-  background:var(--bg);
-  padding:22px 20px;
-  overflow-y:auto;
-  display:flex;
-  flex-direction:column;
-  gap:18px;
-}
-.side-row{
-  display:flex;
-  flex-direction:column;
-  gap:6px;
-}
-.side-label{
-  font-size:.76rem;
-  font-weight:600;
-  color:var(--mute);
-}
-.side-control{
-  width:100%;
-  background:var(--surface);
-  border:1px solid var(--line);
-  border-radius:6px;
-  padding:6px 9px;
-  font-size:.82rem;
-  color:var(--ink);
-  text-align:left;
-}
-.side-control:hover{border-color:var(--line-strong)}
-
-#m-title{
-  width:100%;
-  font-size:1.25rem;
-  font-weight:700;
-  letter-spacing:-.015em;
-  background:transparent;
-  border:1px solid transparent;
-  border-radius:6px;
-  padding:4px 6px;
-  margin-left:-6px;
-  resize:none;
-  line-height:1.35;
-}
-#m-title:hover,#m-title:focus{
-  background:var(--bg);
-  border-color:var(--line-strong);
-  outline:none;
-}
-.section-head{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  margin:20px 0 8px;
-}
-.section-head h3{
-  margin:0;
-  font-size:.85rem;
-  font-weight:600;
-  color:var(--ink);
-}
-#m-desc{
-  width:100%;
-  min-height:92px;
-  background:var(--bg);
-  border:1px solid var(--line);
-  border-radius:7px;
-  padding:10px 12px;
-  font-size:.86rem;
-  line-height:1.55;
-  resize:vertical;
-}
-#m-desc:focus{border-color:var(--line-strong);outline:none}
-
-/* Labels inside modal */
-.side-labels{
-  display:flex;
-  flex-wrap:wrap;
-  gap:5px;
-}
-.label-chip-btn{
-  display:inline-flex;
-  align-items:center;
-  gap:5px;
-  border-radius:999px;
-  padding:3px 9px;
-  font-size:11px;
-  font-weight:500;
-  border:1px solid var(--line-strong);
-  background:var(--surface);
-  color:var(--ink);
-}
-.label-chip-btn:hover{background:var(--lane)}
-
-/* Checklists inside modal (Kan style) */
-.checklist-block{
-  margin-top:16px;
-  border:1px solid var(--line);
-  border-radius:8px;
-  padding:12px 14px;
-  background:var(--bg);
-}
-.checklist-top{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  margin-bottom:8px;
-}
-.checklist-name{
-  flex:1;
-  font-size:.88rem;
-  font-weight:600;
-  background:transparent;
-  border:1px solid transparent;
-  border-radius:4px;
-  padding:2px 5px;
-  min-width:0;
-}
-.checklist-name:hover,.checklist-name:focus{
-  background:var(--surface);
-  border-color:var(--line-strong);
-  outline:none;
-}
-.cl-items{display:flex;flex-direction:column;gap:2px}
-.cl-item{
-  display:flex;
-  align-items:center;
-  gap:9px;
-  padding:5px 6px;
-  border-radius:5px;
-}
-.cl-item:hover{background:var(--lane)}
-.cl-item input[type="checkbox"]{
-  width:15px;
-  height:15px;
-  border-radius:4px;
-  accent-color:#2563eb;
-  cursor:pointer;
-  flex-shrink:0;
-}
-.cl-item-text{
-  flex:1;
-  background:transparent;
-  border:none;
-  font-size:.84rem;
-  padding:1px 3px;
-  min-width:0;
-}
-.cl-item-text.done{text-decoration:line-through;color:var(--mute)}
-.cl-item-text:focus{outline:none;background:var(--surface);border-radius:3px}
-.cl-item-del{
-  opacity:0;
-  border:none;
-  background:transparent;
-  color:var(--mute);
-  padding:2px 5px;
-  border-radius:4px;
-}
-.cl-item:hover .cl-item-del{opacity:1}
-.cl-item-del:hover{color:var(--danger);background:var(--surface)}
-.cl-add-row{
-  display:flex;
-  gap:6px;
-  margin-top:8px;
-}
-.cl-add-row input{
-  flex:1;
-  background:var(--surface);
-  border:1px solid var(--line);
-  border-radius:5px;
-  padding:5px 8px;
-  font-size:.82rem;
-}
-
-/* Comments & Activity Feed (Kan style) */
-.activity-divider{
-  margin-top:26px;
-  padding-top:20px;
-  border-top:1px solid var(--line);
-}
-.comment-box{
-  border:1px solid var(--line-strong);
-  background:var(--bg);
-  border-radius:9px;
-  padding:10px 12px;
-  margin-bottom:16px;
-}
-.comment-box textarea{
-  width:100%;
-  min-height:54px;
-  border:none;
-  background:transparent;
-  resize:vertical;
-  font-size:.84rem;
-  outline:none;
-}
-.comment-box-foot{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-top:6px;
-}
-.hint{font-size:.73rem;color:var(--mute)}
-
-.feed{display:flex;flex-direction:column;gap:12px}
-.comment-card{
-  border:1px solid var(--line-strong);
-  background:var(--bg);
-  border-radius:9px;
-  padding:11px 13px;
-}
-.comment-head{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:8px;
-  margin-bottom:6px;
-  font-size:.78rem;
-  color:var(--mute);
-}
-.comment-author{font-weight:600;color:var(--ink)}
-.comment-body{
-  font-size:.85rem;
-  white-space:pre-wrap;
-  word-break:break-word;
-  color:var(--ink);
-}
-.act-row{
-  display:flex;
-  align-items:flex-start;
-  gap:9px;
-  font-size:.8rem;
-  color:var(--mute);
-}
-.act-dot{
-  width:22px;
-  height:22px;
-  border-radius:50%;
-  background:var(--lane);
-  border:1px solid var(--line-strong);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  flex-shrink:0;
-  color:var(--ink-soft);
-  margin-top:1px;
-}
-.act-text strong{color:var(--ink);font-weight:600}
-
-/* Small Modals (Label Manager & Trash) */
-.small-dlg{width:min(460px,92vw)}
-.small-dlg-head{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:14px 18px;
-  border-bottom:1px solid var(--line);
-}
-.small-dlg-head h2{margin:0;font-size:.95rem;font-weight:700}
-.small-dlg-body{padding:16px 18px;max-height:65vh;overflow-y:auto}
-.color-swatches{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
-.swatch{
-  width:24px;
-  height:24px;
-  border-radius:50%;
-  border:2px solid transparent;
-  cursor:pointer;
-}
-.swatch.active{outline:2px solid var(--ink);outline-offset:2px}
-.label-manage-row{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  padding:6px 8px;
-  border-radius:6px;
-  border:1px solid var(--line);
-  margin-bottom:6px;
-}
-.trash-row{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-  padding:8px 10px;
-  border:1px solid var(--line);
-  border-radius:7px;
-  margin-bottom:8px;
-  background:var(--bg);
-}
-
-/* Toast Popup (Kan style) */
-#toast{
-  position:fixed;
-  right:18px;
-  bottom:18px;
-  background:var(--surface);
-  border:1px solid var(--line-strong);
-  border-radius:9px;
-  padding:10px 14px;
-  box-shadow:var(--shadow-pop);
-  font-size:.82rem;
-  font-weight:500;
-  z-index:500;
-  opacity:0;
-  transform:translateY(8px);
-  pointer-events:none;
-  transition:opacity .18s,transform .18s;
-}
-#toast.show{opacity:1;transform:translateY(0)}
-
-@media (max-width:780px){
-  .modal-body{flex-direction:column}
-  .modal-side{width:100%;border-left:none;border-top:1px solid var(--line)}
-  #card-dlg{height:92vh}
-}
-@media (max-width:600px){
-  header{padding:12px 14px}
-  main{padding:4px 14px 16px}
-  .lane{flex-basis:84vw;width:84vw}
-}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StudyFlow — Estudos & Projetos</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: { sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'] },
+          boxShadow: {
+            '3xl-dark': '0px 16px 70px rgba(0, 0, 0, 0.5)',
+            '3xl-light': 'rgba(0, 0, 0, 0.12) 0px 4px 30px, rgba(0, 0, 0, 0.04) 0px 3px 17px',
+          },
+          colors: {
+            'dark-50': '#161616',
+            'dark-100': '#1c1c1c',
+            'dark-200': '#232323',
+            'dark-300': '#282828',
+            'dark-400': '#2e2e2e',
+            'dark-500': '#343434',
+            'dark-600': '#3e3e3e',
+            'dark-700': '#505050',
+            'dark-800': '#707070',
+            'dark-900': '#7e7e7e',
+            'dark-950': '#bbbbbb',
+            'dark-1000': '#ededed',
+            'light-50': 'hsl(0deg 0% 98.8%)',
+            'light-100': 'hsl(0deg 0% 97.3%)',
+            'light-200': 'hsl(0deg 0% 95.3%)',
+            'light-300': 'hsl(0deg 0% 92.9%)',
+            'light-400': 'hsl(0deg 0% 91%)',
+            'light-500': 'hsl(0deg 0% 88.6%)',
+            'light-600': 'hsl(0deg 0% 85.9%)',
+            'light-700': 'hsl(0deg 0% 78%)',
+            'light-800': 'hsl(0deg 0% 56.1%)',
+            'light-900': 'hsl(0deg 0% 52.2%)',
+            'light-950': 'hsl(0deg 0% 43.5%)',
+            'light-1000': 'hsl(0deg 0% 9%)',
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    html { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; font-size: 15px; }
+    .patterned-bg {
+      background-image: radial-gradient(circle, rgba(120, 120, 120, 0.16) 1px, transparent 1px);
+      background-size: 14px 14px;
+    }
+    .dark .patterned-bg {
+      background-image: radial-gradient(circle, rgba(255, 255, 255, 0.07) 1px, transparent 1px);
+      background-size: 14px 14px;
+    }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(128, 128, 128, 0.3); border-radius: 9999px; }
+  </style>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
-<body>
+<body class="bg-light-100 text-light-1000 antialiased dark:bg-dark-50 dark:text-dark-1000">
+  <div id="root"></div>
 
-<header>
-  <div class="board-title-wrap">
-    <input id="board-title" aria-label="Nome do quadro" value="Meu Kanban">
-    <span id="prefix-btn" class="prefix-pill" title="Alterar prefixo dos cartões">KAN</span>
-  </div>
+  <script type="text/babel">
+    const { useState, useEffect, useMemo, useRef } = React;
 
-  <div class="search-wrap">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-    <input id="search" type="search" placeholder="Buscar cartões..." aria-label="Buscar cartões">
-  </div>
+    // --- Ícones SVG minimalistas ---
+    const Icon = ({ name, className = "w-4 h-4" }) => {
+      const icons = {
+        kanban: <><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M8 7v7"/><path d="M12 7v4"/><path d="M16 7v9"/></>,
+        template: <><rect width="18" height="7" x="3" y="3" rx="1"/><rect width="9" height="7" x="3" y="14" rx="1"/><rect width="5" height="7" x="16" y="14" rx="1"/></>,
+        book: <><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></>,
+        settings: <><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></>,
+        search: <><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></>,
+        plus: <><path d="M5 12h14"/><path d="M12 5v14"/></>,
+        star: <><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></>,
+        archive: <><rect width="20" height="5" x="2" y="3" rx="1"/><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"/><path d="M10 12h4"/></>,
+        calendar: <><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></>,
+        sun: <><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></>,
+        moon: <><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></>,
+        x: <><path d="M18 6 6 18"/><path d="m6 6 12 12"/></>,
+        check: <><polyline points="20 6 9 17 4 12"/></>,
+        chevronDown: <><path d="m6 9 6 6 6-6"/></>,
+        chevronLeft: <><path d="m15 18-6-6 6-6"/></>,
+        chevronRight: <><path d="m9 18 6-6-6-6"/></>,
+        github: <><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"/><path d="M9 18c-4.51 2-5-2-7-2"/></>,
+        external: <><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></>,
+        trash: <><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></>,
+        download: <><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/></>,
+        upload: <><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/></>,
+        filter: <><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></>,
+        clock: <><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></>,
+        panelLeft: <><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 3v18"/></>,
+        keyboard: <><rect width="20" height="16" x="2" y="4" rx="2"/><path d="M6 8h.001"/><path d="M10 8h.001"/><path d="M14 8h.001"/><path d="M18 8h.001"/><path d="M8 12h.001"/><path d="M12 12h.001"/><path d="M16 12h.001"/><path d="M7 16h10"/></>,
+      };
+      return (
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          {icons[name]}
+        </svg>
+      );
+    };
 
-  <!-- Filtros estilo Kan -->
-  <div class="rel">
-    <button class="btn" id="filter-btn" type="button">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
-      Filtros
-    </button>
-    <span id="filter-badge" class="count-dot" hidden>0</span>
-    <div id="filter-pop" class="popover" style="min-width:250px"></div>
-  </div>
+    const PRESET_COLORS = ['#4f46e5', '#0ea5e9', '#10b981', '#f59e0b', '#ef4444', '#ec4899', '#8b5cf6', '#64748b'];
 
-  <button class="btn" id="labels-btn" type="button">
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><path d="M7 7h.01"/></svg>
-    Etiquetas
-  </button>
+    const BUILTIN_TEMPLATES = [
+      {
+        id: 'tpl-dev',
+        name: 'Projeto Full-Stack (GitHub)',
+        category: 'projeto',
+        description: 'Fluxo enxuto para repositórios pessoais, issues, PRs e deploy.',
+        lists: ['Backlog', 'Em Desenvolvimento', 'Testes & Docs', 'Concluído'],
+        labels: [
+          { id: 'l1', name: 'Feature', colourCode: '#4f46e5' },
+          { id: 'l2', name: 'Bug', colourCode: '#ef4444' },
+          { id: 'l3', name: 'Refatoração', colourCode: '#f59e0b' },
+          { id: 'l4', name: 'Docs', colourCode: '#10b981' },
+        ],
+      },
+      {
+        id: 'tpl-study',
+        name: 'Trilha de Estudos & Prática',
+        category: 'estudos',
+        description: 'Organize módulos teóricos, resumos ativos e projetos práticos.',
+        lists: ['Para Estudar', 'Estudando', 'Praticando', 'Dominado'],
+        labels: [
+          { id: 'l1', name: 'Teoria', colourCode: '#0ea5e9' },
+          { id: 'l2', name: 'Prática', colourCode: '#10b981' },
+          { id: 'l3', name: 'Revisão', colourCode: '#8b5cf6' },
+          { id: 'l4', name: 'Prioridade', colourCode: '#ef4444' },
+        ],
+      },
+      {
+        id: 'tpl-exam',
+        name: 'Preparação para Provas / Certificação',
+        category: 'estudos',
+        description: 'Controle tópicos do edital, simulados e revisões finais.',
+        lists: ['Edital / Tópicos', 'Resumo Feito', 'Simulados', 'Revisado'],
+        labels: [
+          { id: 'l1', name: 'Peso Alto', colourCode: '#ef4444' },
+          { id: 'l2', name: 'Simulado', colourCode: '#f59e0b' },
+          { id: 'l3', name: 'Conceitos', colourCode: '#4f46e5' },
+        ],
+      },
+      {
+        id: 'tpl-research',
+        name: 'TCC / Artigo Técnico',
+        category: 'pesquisa',
+        description: 'Do levantamento bibliográfico à escrita e revisão final.',
+        lists: ['Referências', 'Fichamento', 'Escrita', 'Revisão', 'Finalizado'],
+        labels: [
+          { id: 'l1', name: 'Bibliografia', colourCode: '#0ea5e9' },
+          { id: 'l2', name: 'Experimento', colourCode: '#10b981' },
+          { id: 'l3', name: 'Escrita', colourCode: '#8b5cf6' },
+        ],
+      },
+    ];
 
-  <div class="rel">
-    <button class="btn" id="trash-btn" type="button" title="Lixeira">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
-      Lixeira
-    </button>
-    <span id="trash-badge" class="count-dot" hidden>0</span>
-  </div>
+    const uid = (p = 'id') => `${p}-${Math.random().toString(36).slice(2, 8)}-${Date.now().toString(36)}`;
+    const addDays = (d) => {
+      const dt = new Date();
+      dt.setDate(dt.getDate() + d);
+      return dt.toISOString().split('T')[0];
+    };
 
-  <button class="btn icon-btn" id="theme" title="Alternar tema claro/escuro" aria-label="Alternar tema">
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 0 0 18V3z" fill="currentColor"/></svg>
-  </button>
+    const INITIAL_STATE = {
+      profile: { name: 'Meu Espaço Dev & Estudos', githubHandle: 'seu-usuario' },
+      workspaces: [
+        { id: 'ws-estudos', name: 'Estudos & Fundamentação', description: 'Disciplinas, algoritmos, arquitetura e revisões.' },
+        { id: 'ws-projetos', name: 'Projetos & GitHub', description: 'Aplicações pessoais, experimentos e portfólio.' },
+      ],
+      activeWorkspaceId: 'ws-estudos',
+      boards: [
+        {
+          id: 'board-alg',
+          workspaceId: 'ws-estudos',
+          name: 'Estruturas de Dados & Algoritmos',
+          description: 'Estudo dirigido com resolução de problemas e implementação prática.',
+          category: 'estudos',
+          repoLink: 'https://github.com',
+          favorite: true,
+          archived: false,
+          lists: [
+            { id: 'l-1', name: 'Para Estudar' },
+            { id: 'l-2', name: 'Em Andamento' },
+            { id: 'l-3', name: 'Revisão' },
+            { id: 'l-4', name: 'Concluído' },
+          ],
+          labels: [
+            { id: 'lbl-1', name: 'Grafos', colourCode: '#4f46e5' },
+            { id: 'lbl-2', name: 'Prática', colourCode: '#10b981' },
+            { id: 'lbl-3', name: 'Urgente', colourCode: '#ef4444' },
+          ],
+          cards: [
+            {
+              id: 'c-1',
+              code: 'EST-01',
+              title: 'Árvores Binárias de Busca e Balanceamento (AVL)',
+              description: 'Implementar inserção, remoção e rotações simples/duplas sem consultar código pronto.',
+              listId: 'l-2',
+              labelIds: ['lbl-1', 'lbl-2'],
+              dueDate: addDays(2),
+              repoUrl: 'https://github.com',
+              studyHours: 4,
+              checklists: [
+                {
+                  id: 'chk-1',
+                  name: 'Etapas de domínio',
+                  items: [
+                    { id: 'ci-1', title: 'Ler capítulo de árvores balanceadas', completed: true },
+                    { id: 'ci-2', title: 'Implementar rotações LL, RR, LR, RL', completed: true },
+                    { id: 'ci-3', title: 'Resolver 5 exercícios no LeetCode', completed: false },
+                  ],
+                },
+              ],
+              activities: [{ id: 'a-1', text: 'Card iniciado na trilha de Estruturas de Dados.', createdAt: new Date().toISOString() }],
+            },
+            {
+              id: 'c-2',
+              code: 'EST-02',
+              title: 'Algoritmo de Dijkstra e Caminhos Mínimos',
+              description: 'Comparar complexidade usando fila de prioridade (Min-Heap).',
+              listId: 'l-1',
+              labelIds: ['lbl-1'],
+              dueDate: addDays(5),
+              studyHours: 3,
+              checklists: [],
+              activities: [],
+            },
+            {
+              id: 'c-3',
+              code: 'EST-03',
+              title: 'Complexidade Assintótica (Big-O, Theta, Omega)',
+              description: 'Resumo completo com análise de recorrências e Teorema Mestre.',
+              listId: 'l-4',
+              labelIds: ['lbl-2'],
+              dueDate: addDays(-1),
+              studyHours: 2.5,
+              checklists: [
+                {
+                  id: 'chk-2',
+                  name: 'Checklist',
+                  items: [
+                    { id: 'ci-4', title: 'Anotações no caderno digital', completed: true },
+                    { id: 'ci-5', title: 'Flashcards de revisão criados', completed: true },
+                  ],
+                },
+              ],
+              activities: [],
+            },
+          ],
+        },
+        {
+          id: 'board-proj',
+          workspaceId: 'ws-projetos',
+          name: 'StudyFlow — Projeto GitHub',
+          description: 'Aplicação pessoal de organização de estudos e projetos hospedada no GitHub Pages.',
+          category: 'projeto',
+          repoLink: 'https://github.com',
+          favorite: true,
+          archived: false,
+          lists: [
+            { id: 'lp-1', name: 'Backlog' },
+            { id: 'lp-2', name: 'Em Desenvolvimento' },
+            { id: 'lp-3', name: 'Concluído' },
+          ],
+          labels: [
+            { id: 'lblp-1', name: 'Feature', colourCode: '#4f46e5' },
+            { id: 'lblp-2', name: 'Deploy', colourCode: '#10b981' },
+          ],
+          cards: [
+            {
+              id: 'cp-1',
+              code: 'PRJ-01',
+              title: 'Subir index.html no repositório GitHub e ativar Pages',
+              description: 'Criar repositório, fazer push do index.html e publicar online gratuitamente.',
+              listId: 'lp-2',
+              labelIds: ['lblp-2'],
+              dueDate: addDays(1),
+              repoUrl: 'https://github.com',
+              studyHours: 1,
+              checklists: [
+                {
+                  id: 'chkp-1',
+                  name: 'Checklist GitHub',
+                  items: [
+                    { id: 'cip-1', title: 'Criar repositório no GitHub', completed: true },
+                    { id: 'cip-2', title: 'Enviar index.html para a branch main', completed: false },
+                  ],
+                },
+              ],
+              activities: [],
+            },
+          ],
+        },
+      ],
+      resources: [
+        { id: 'r-1', workspaceId: 'ws-estudos', title: 'Roadmap.sh — Computer Science & Backend', type: 'Documentação', url: 'https://roadmap.sh', tag: 'Trilha', completed: false },
+        { id: 'r-2', workspaceId: 'ws-estudos', title: 'Visualgo — Visualização de Algoritmos', type: 'Curso / Vídeo', url: 'https://visualgo.net', tag: 'Algoritmos', completed: true },
+        { id: 'r-3', workspaceId: 'ws-projetos', title: 'GitHub Pages Docs — Hospedagem Estática', type: 'Repositório', url: 'https://docs.github.com/pages', tag: 'Deploy', completed: false },
+      ],
+    };
 
-  <div class="rel">
-    <button class="btn icon-btn" id="more-btn" title="Mais opções" aria-label="Mais opções">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
-    </button>
-    <div id="more-pop" class="popover" style="min-width:190px">
-      <button type="button" class="pop-item" id="export">Exportar JSON</button>
-      <button type="button" class="pop-item" id="import">Importar JSON</button>
-      <div class="pop-sep"></div>
-      <button type="button" class="pop-item" id="reset-demo">Restaurar exemplo</button>
-    </div>
-  </div>
-  <input type="file" id="file" accept="application/json" hidden>
-</header>
+    const STORAGE_KEY = 'studyflow_kan_singlefile_v1';
+    const THEME_KEY = 'studyflow_kan_theme';
 
-<main id="board"></main>
+    function CircularProgress({ percentage, size = 14 }) {
+      const sw = 2.2;
+      const r = (size - sw) / 2;
+      const c = r * 2 * Math.PI;
+      const offset = c - (Math.min(100, Math.max(0, percentage)) / 100) * c;
+      return (
+        <svg width={size} height={size} className="-rotate-90 transform shrink-0">
+          <circle cx={size / 2} cy={size / 2} r={r} fill="transparent" stroke="currentColor" strokeWidth={sw} className="text-light-500 dark:text-dark-500" />
+          <circle cx={size / 2} cy={size / 2} r={r} fill="transparent" stroke="currentColor" strokeWidth={sw} strokeDasharray={c} strokeDashoffset={offset} strokeLinecap="round" className={percentage === 100 ? 'text-emerald-500' : 'text-indigo-500'} />
+        </svg>
+      );
+    }
 
-<!-- Context Menu rápido no cartão -->
-<div id="ctx-menu" class="ctx-menu"></div>
+    function App() {
+      const [state, setState] = useState(() => {
+        try {
+          const raw = localStorage.getItem(STORAGE_KEY);
+          return raw ? JSON.parse(raw) : INITIAL_STATE;
+        } catch { return INITIAL_STATE; }
+      });
 
-<!-- Modal Completo do Cartão (Kan Layout) -->
-<dialog id="card-dlg">
-  <div class="modal-shell">
-    <div class="modal-topbar">
-      <div class="breadcrumbs">
-        <span id="m-crumb-board">Meu Kanban</span>
-        <span class="muted">›</span>
-        <span id="m-crumb-list">Lista</span>
-        <span class="muted">›</span>
-        <span id="m-crumb-num" class="muted">KAN-1</span>
-      </div>
-      <div style="display:flex;align-items:center;gap:6px">
-        <button type="button" class="btn sm ghost" id="m-dup-btn" title="Duplicar cartão">Duplicar</button>
-        <button type="button" class="btn sm ghost danger" id="m-del-btn" title="Mover para lixeira">Excluir</button>
-        <button type="button" class="btn sm icon-btn ghost" id="m-close-btn" aria-label="Fechar">✕</button>
-      </div>
-    </div>
+      const [theme, setTheme] = useState(() => localStorage.getItem(THEME_KEY) || 'dark');
+      const [route, setRoute] = useState('boards'); // boards | templates | resources | settings | board-detail
+      const [activeBoardId, setActiveBoardId] = useState(null);
+      const [selectedCardId, setSelectedCardId] = useState(null);
+      const [collapsed, setCollapsed] = useState(false);
+      const [cmdOpen, setCmdOpen] = useState(false);
+      const [shortcutsOpen, setShortcutsOpen] = useState(false);
+      const [createBoardOpen, setCreateBoardOpen] = useState(false);
+      const lastKeyRef = useRef({ key: '', time: 0 });
 
-    <div class="modal-body">
-      <div class="modal-main">
-        <textarea id="m-title" rows="1" maxlength="160" placeholder="Título do cartão"></textarea>
+      useEffect(() => {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      }, [state]);
 
-        <div class="section-head">
-          <h3>Descrição</h3>
+      useEffect(() => {
+        localStorage.setItem(THEME_KEY, theme);
+        document.documentElement.classList.toggle('dark', theme === 'dark');
+      }, [theme]);
+
+      // Atalhos de teclado (Ctrl+K, G->B/T/R/S, C, ?)
+      useEffect(() => {
+        const handler = (e) => {
+          const tag = e.target.tagName;
+          const isInput = tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT';
+          if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+            e.preventDefault();
+            setCmdOpen((v) => !v);
+            return;
+          }
+          if (e.key === 'Escape') {
+            setCmdOpen(false);
+            setShortcutsOpen(false);
+            setCreateBoardOpen(false);
+            setSelectedCardId(null);
+            return;
+          }
+          if (isInput) return;
+          const k = e.key.toLowerCase();
+          const now = Date.now();
+          if (e.key === '?') {
+            setShortcutsOpen((v) => !v);
+            return;
+          }
+          if (k === 'c' && !e.ctrlKey && !e.metaKey) {
+            setCreateBoardOpen(true);
+            return;
+          }
+          if (lastKeyRef.current.key === 'g' && now - lastKeyRef.current.time < 900) {
+            if (k === 'b') setRoute('boards');
+            if (k === 't') setRoute('templates');
+            if (k === 'r') setRoute('resources');
+            if (k === 's') setRoute('settings');
+            lastKeyRef.current = { key: '', time: 0 };
+            return;
+          }
+          lastKeyRef.current = { key: k, time: now };
+        };
+        window.addEventListener('keydown', handler);
+        return () => window.removeEventListener('keydown', handler);
+      }, []);
+
+      const activeWorkspace = state.workspaces.find((w) => w.id === state.activeWorkspaceId) || state.workspaces[0];
+      const workspaceBoards = state.boards.filter((b) => b.workspaceId === activeWorkspace.id);
+      const activeBoard = state.boards.find((b) => b.id === activeBoardId) || null;
+      const totalHours = useMemo(
+        () => workspaceBoards.filter((b) => !b.archived).reduce((acc, b) => acc + b.cards.reduce((s, c) => s + (Number(c.studyHours) || 0), 0), 0),
+        [workspaceBoards]
+      );
+
+      const updateBoard = (boardId, updater) => {
+        setState((prev) => ({
+          ...prev,
+          boards: prev.boards.map((b) => (b.id === boardId ? updater(b) : b)),
+        }));
+      };
+
+      const createBoard = ({ name, description, category, repoLink, lists, labels }) => {
+        const newBoard = {
+          id: uid('board'),
+          workspaceId: activeWorkspace.id,
+          name,
+          description,
+          category: category || 'estudos',
+          repoLink: repoLink || '',
+          favorite: false,
+          archived: false,
+          lists: (lists || ['Para Estudar', 'Em Andamento', 'Revisão', 'Concluído']).map((ln) => ({ id: uid('list'), name: ln })),
+          labels: (labels || [
+            { id: uid('lbl'), name: 'Teoria', colourCode: '#0ea5e9' },
+            { id: uid('lbl'), name: 'Prática', colourCode: '#10b981' },
+            { id: uid('lbl'), name: 'Urgente', colourCode: '#ef4444' },
+          ]).map((l) => ({ ...l, id: uid('lbl') })),
+          cards: [],
+        };
+        setState((prev) => ({ ...prev, boards: [newBoard, ...prev.boards] }));
+        setActiveBoardId(newBoard.id);
+        setRoute('board-detail');
+      };
+
+      return (
+        <div className="flex h-screen w-screen overflow-hidden bg-light-100 text-light-1000 dark:bg-dark-50 dark:text-dark-1000">
+          {/* SIDEBAR */}
+          <SideNav
+            workspaces={state.workspaces}
+            activeWorkspace={activeWorkspace}
+            onSwitchWorkspace={(id) => {
+              setState((p) => ({ ...p, activeWorkspaceId: id }));
+              setRoute('boards');
+            }}
+            onCreateWorkspace={(name, description) => {
+              const ws = { id: uid('ws'), name, description };
+              setState((p) => ({ ...p, workspaces: [...p.workspaces, ws], activeWorkspaceId: ws.id }));
+            }}
+            route={route}
+            onNavigate={(r) => setRoute(r)}
+            onOpenCmd={() => setCmdOpen(true)}
+            onOpenShortcuts={() => setShortcutsOpen(true)}
+            theme={theme}
+            onToggleTheme={() => setTheme((t) => (t === 'dark' ? 'light' : 'dark'))}
+            collapsed={collapsed}
+            onToggleCollapse={() => setCollapsed((c) => !c)}
+            profileName={state.profile.name}
+            githubHandle={state.profile.githubHandle}
+            totalHours={totalHours}
+          />
+
+          {/* CONTEÚDO PRINCIPAL */}
+          <main className="flex flex-1 flex-col overflow-hidden">
+            {route === 'boards' && (
+              <BoardsView
+                workspace={activeWorkspace}
+                boards={workspaceBoards}
+                onOpenBoard={(id) => { setActiveBoardId(id); setRoute('board-detail'); }}
+                onToggleFav={(id) => updateBoard(id, (b) => ({ ...b, favorite: !b.favorite }))}
+                onToggleArchive={(id) => updateBoard(id, (b) => ({ ...b, archived: !b.archived }))}
+                onDeleteBoard={(id) => setState((p) => ({ ...p, boards: p.boards.filter((b) => b.id !== id) }))}
+                onOpenCreate={() => setCreateBoardOpen(true)}
+              />
+            )}
+
+            {route === 'board-detail' && activeBoard && (
+              <BoardDetailView
+                board={activeBoard}
+                onBack={() => setRoute('boards')}
+                onUpdateBoard={(updater) => updateBoard(activeBoard.id, updater)}
+                onSelectCard={(cardId) => setSelectedCardId(cardId)}
+              />
+            )}
+
+            {route === 'templates' && (
+              <TemplatesView
+                onUseTemplate={(tpl) =>
+                  createBoard({
+                    name: tpl.name,
+                    description: tpl.description,
+                    category: tpl.category,
+                    lists: tpl.lists,
+                    labels: tpl.labels,
+                  })
+                }
+              />
+            )}
+
+            {route === 'resources' && (
+              <ResourcesView
+                resources={state.resources.filter((r) => r.workspaceId === activeWorkspace.id)}
+                onAdd={(res) => setState((p) => ({ ...p, resources: [{ ...res, id: uid('res'), workspaceId: activeWorkspace.id, completed: false }, ...p.resources] }))}
+                onToggle={(id) => setState((p) => ({ ...p, resources: p.resources.map((r) => (r.id === id ? { ...r, completed: !r.completed } : r)) }))}
+                onDelete={(id) => setState((p) => ({ ...p, resources: p.resources.filter((r) => r.id !== id) }))}
+              />
+            )}
+
+            {route === 'settings' && (
+              <SettingsView
+                state={state}
+                onUpdateProfile={(profile) => setState((p) => ({ ...p, profile }))}
+                onImportState={(imported) => setState(imported)}
+                onReset={() => {
+                  if (confirm('Restaurar dados iniciais de exemplo?')) {
+                    setState(INITIAL_STATE);
+                  }
+                }}
+              />
+            )}
+          </main>
+
+          {/* MODAL DO CARD */}
+          {activeBoard && selectedCardId && (() => {
+            const card = activeBoard.cards.find((c) => c.id === selectedCardId);
+            if (!card) return null;
+            return (
+              <CardModal
+                board={activeBoard}
+                card={card}
+                onClose={() => setSelectedCardId(null)}
+                onUpdateCard={(updated) =>
+                  updateBoard(activeBoard.id, (b) => ({
+                    ...b,
+                    cards: b.cards.map((c) => (c.id === updated.id ? updated : c)),
+                  }))
+                }
+                onDeleteCard={(cid) =>
+                  updateBoard(activeBoard.id, (b) => ({
+                    ...b,
+                    cards: b.cards.filter((c) => c.id !== cid),
+                  }))
+                }
+                onCreateLabel={(name, colourCode) => {
+                  const id = uid('lbl');
+                  updateBoard(activeBoard.id, (b) => ({
+                    ...b,
+                    labels: [...b.labels, { id, name, colourCode }],
+                  }));
+                  return id;
+                }}
+              />
+            );
+          })()}
+
+          {/* MODAL NOVO QUADRO */}
+          {createBoardOpen && (
+            <CreateBoardModal
+              onClose={() => setCreateBoardOpen(false)}
+              onCreate={(data) => {
+                createBoard(data);
+                setCreateBoardOpen(false);
+              }}
+            />
+          )}
+
+          {/* COMMAND PALETTE */}
+          {cmdOpen && (
+            <CommandPalette
+              boards={state.boards}
+              onClose={() => setCmdOpen(false)}
+              onOpenBoard={(id) => { setActiveBoardId(id); setRoute('board-detail'); }}
+              onOpenCard={(bid, cid) => { setActiveBoardId(bid); setRoute('board-detail'); setSelectedCardId(cid); }}
+              onNavigate={(r) => setRoute(r)}
+            />
+          )}
+
+          {/* ATALHOS */}
+          {shortcutsOpen && <ShortcutsModal onClose={() => setShortcutsOpen(false)} />}
         </div>
-        <textarea id="m-desc" placeholder="Adicione detalhes, notas ou links..."></textarea>
+      );
+    }
 
-        <div class="section-head">
-          <h3>Checklists</h3>
-          <button type="button" class="btn sm" id="m-add-cl">+ Adicionar checklist</button>
-        </div>
-        <div id="m-checklists"></div>
+    // --- SIDEBAR COMPONENT ---
+    function SideNav({ workspaces, activeWorkspace, onSwitchWorkspace, onCreateWorkspace, route, onNavigate, onOpenCmd, onOpenShortcuts, theme, onToggleTheme, collapsed, onToggleCollapse, profileName, githubHandle, totalHours }) {
+      const [wsOpen, setWsOpen] = useState(false);
+      const [creatingWs, setCreatingWs] = useState(false);
+      const [wsName, setWsName] = useState('');
 
-        <div class="activity-divider">
-          <div class="section-head" style="margin-top:0">
-            <h3>Atividade e Comentários</h3>
-            <button type="button" class="btn sm ghost" id="m-sort-act">Mais recentes primeiro</button>
+      const navs = [
+        { id: 'boards', label: 'Quadros', shortcut: 'G B', icon: 'kanban' },
+        { id: 'templates', label: 'Templates', shortcut: 'G T', icon: 'template' },
+        { id: 'resources', label: 'Roteiros & Links', shortcut: 'G R', icon: 'book' },
+        { id: 'settings', label: 'Configurações', shortcut: 'G S', icon: 'settings' },
+      ];
+
+      return (
+        <aside className={`flex h-screen shrink-0 flex-col justify-between border-r border-light-400 bg-light-50 p-3 transition-all dark:border-dark-300 dark:bg-dark-100 ${collapsed ? 'w-[62px]' : 'w-[248px]'}`}>
+          <div>
+            <div className="relative mb-3">
+              <div className={`flex items-center gap-1.5 ${collapsed ? 'flex-col' : 'justify-between'}`}>
+                <button
+                  onClick={() => setWsOpen(!wsOpen)}
+                  className={`flex h-[34px] min-w-0 flex-1 items-center rounded-md p-1.5 text-left hover:bg-light-200 dark:hover:bg-dark-200 ${collapsed ? 'w-9 flex-none justify-center p-0' : ''}`}
+                >
+                  <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-indigo-700 text-xs font-bold text-white">
+                    {activeWorkspace.name.charAt(0).toUpperCase()}
+                  </span>
+                  {!collapsed && (
+                    <>
+                      <span className="ml-2 flex-1 truncate text-sm font-bold">{activeWorkspace.name}</span>
+                      <Icon name="chevronDown" className="ml-1 h-3.5 w-3.5 shrink-0 text-light-800 dark:text-dark-800" />
+                    </>
+                  )}
+                </button>
+                <button
+                  onClick={onOpenCmd}
+                  title="Buscar (Ctrl+K)"
+                  className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-lg bg-light-200 text-light-900 hover:bg-light-300 dark:bg-dark-200 dark:text-dark-950 dark:hover:bg-dark-300"
+                >
+                  <Icon name="search" />
+                </button>
+              </div>
+
+              {wsOpen && (
+                <div className="absolute left-0 top-11 z-40 w-60 rounded-lg border border-light-500 bg-light-50 p-1.5 shadow-3xl-light dark:border-dark-500 dark:bg-dark-200 dark:shadow-3xl-dark">
+                  <div className="px-2 py-1 text-[11px] font-semibold uppercase tracking-wider text-light-800 dark:text-dark-800">Espaços Pessoais</div>
+                  {workspaces.map((ws) => (
+                    <button
+                      key={ws.id}
+                      onClick={() => { onSwitchWorkspace(ws.id); setWsOpen(false); }}
+                      className="flex w-full items-center justify-between rounded-md px-2 py-2 text-left text-sm hover:bg-light-200 dark:hover:bg-dark-300"
+                    >
+                      <span className="truncate">{ws.name}</span>
+                      {ws.id === activeWorkspace.id && <Icon name="check" className="h-3.5 w-3.5 text-indigo-500" />}
+                    </button>
+                  ))}
+                  <div className="my-1 border-t border-light-400 dark:border-dark-400" />
+                  {!creatingWs ? (
+                    <button onClick={() => setCreatingWs(true)} className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs font-medium text-indigo-600 hover:bg-light-200 dark:text-indigo-400 dark:hover:bg-dark-300">
+                      <Icon name="plus" className="h-3.5 w-3.5" /> Novo espaço
+                    </button>
+                  ) : (
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        if (!wsName.trim()) return;
+                        onCreateWorkspace(wsName.trim(), '');
+                        setWsName('');
+                        setCreatingWs(false);
+                        setWsOpen(false);
+                      }}
+                      className="space-y-1.5 p-1.5"
+                    >
+                      <input autoFocus value={wsName} onChange={(e) => setWsName(e.target.value)} placeholder="Nome do espaço..." className="w-full rounded border border-light-500 bg-white px-2 py-1 text-xs dark:border-dark-500 dark:bg-dark-100" />
+                      <button type="submit" className="w-full rounded bg-indigo-700 py-1 text-xs font-semibold text-white">Criar</button>
+                    </form>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <nav className="space-y-1">
+              {navs.map((item) => {
+                const active = route === item.id || (item.id === 'boards' && route === 'board-detail');
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => onNavigate(item.id)}
+                    className={`group flex w-full items-center justify-between rounded-md px-2.5 py-2 text-sm font-medium transition-colors ${
+                      active
+                        ? 'bg-light-200 text-light-1000 dark:bg-dark-200 dark:text-dark-1000'
+                        : 'text-light-900 hover:bg-light-200/70 hover:text-light-1000 dark:text-dark-900 dark:hover:bg-dark-200/70 dark:hover:text-dark-1000'
+                    } ${collapsed ? 'justify-center px-0' : ''}`}
+                  >
+                    <div className="flex items-center gap-2.5">
+                      <Icon name={item.icon} />
+                      {!collapsed && <span>{item.label}</span>}
+                    </div>
+                    {!collapsed && <span className="text-[10px] text-light-700 opacity-0 group-hover:opacity-100 dark:text-dark-700">{item.shortcut}</span>}
+                  </button>
+                );
+              })}
+            </nav>
+
+            {!collapsed && (
+              <div className="mt-6 rounded-lg border border-dashed border-light-400 bg-light-100/70 p-3 dark:border-dark-400 dark:bg-dark-50/70">
+                <div className="flex items-center justify-between text-xs text-light-800 dark:text-dark-800">
+                  <span>Horas planejadas</span>
+                  <span className="font-bold text-indigo-600 dark:text-indigo-400">{totalHours}h</span>
+                </div>
+                {githubHandle && (
+                  <a href={`https://github.com/${githubHandle}`} target="_blank" rel="noreferrer" className="mt-2 flex items-center gap-1.5 truncate text-xs text-light-900 hover:text-light-1000 dark:text-dark-900 dark:hover:text-dark-1000">
+                    <Icon name="github" className="h-3.5 w-3.5 shrink-0" />
+                    <span className="truncate">github.com/{githubHandle}</span>
+                  </a>
+                )}
+              </div>
+            )}
           </div>
 
-          <div class="comment-box">
-            <textarea id="m-comment-input" placeholder="Escreva um comentário..."></textarea>
-            <div class="comment-box-foot">
-              <span class="hint">Ctrl + Enter para enviar</span>
-              <button type="button" class="btn sm primary" id="m-comment-submit">Comentar</button>
+          <div className="space-y-1 border-t border-light-400 pt-3 dark:border-dark-300">
+            <div className={`flex items-center ${collapsed ? 'flex-col gap-1.5' : 'justify-between px-1'}`}>
+              <button onClick={onToggleTheme} className="flex items-center gap-2 rounded-md p-1.5 text-xs text-light-900 hover:bg-light-200 dark:text-dark-900 dark:hover:bg-dark-200">
+                <Icon name={theme === 'dark' ? 'sun' : 'moon'} className={theme === 'dark' ? 'h-4 w-4 text-amber-400' : 'h-4 w-4 text-indigo-600'} />
+                {!collapsed && <span>{theme === 'dark' ? 'Modo Claro' : 'Modo Escuro'}</span>}
+              </button>
+              <div className="flex items-center gap-1">
+                <button onClick={onOpenShortcuts} title="Atalhos (?)" className="rounded-md p-1.5 text-light-900 hover:bg-light-200 dark:text-dark-900 dark:hover:bg-dark-200">
+                  <Icon name="keyboard" />
+                </button>
+                <button onClick={onToggleCollapse} title="Recolher" className="rounded-md p-1.5 text-light-900 hover:bg-light-200 dark:text-dark-900 dark:hover:bg-dark-200">
+                  <Icon name="panelLeft" />
+                </button>
+              </div>
+            </div>
+
+            <button onClick={() => onNavigate('settings')} className={`flex w-full items-center gap-2.5 rounded-md p-1.5 text-left hover:bg-light-200 dark:hover:bg-dark-200 ${collapsed ? 'justify-center' : ''}`}>
+              <span className="inline-flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-light-400 text-xs font-bold dark:bg-dark-400">
+                {profileName.charAt(0).toUpperCase()}
+              </span>
+              {!collapsed && <span className="truncate text-sm text-light-950 dark:text-dark-950">{profileName}</span>}
+            </button>
+          </div>
+        </aside>
+      );
+    }
+
+    // --- BOARDS VIEW ---
+    function BoardsView({ workspace, boards, onOpenBoard, onToggleFav, onToggleArchive, onDeleteBoard, onOpenCreate }) {
+      const [tab, setTab] = useState('active'); // active | archived
+      const [search, setSearch] = useState('');
+
+      const filtered = boards.filter((b) => {
+        const matchTab = tab === 'archived' ? b.archived : !b.archived;
+        const matchSearch = !search.trim() || b.name.toLowerCase().includes(search.toLowerCase());
+        return matchTab && matchSearch;
+      });
+
+      const favorites = filtered.filter((b) => b.favorite);
+      const others = filtered.filter((b) => !b.favorite);
+
+      const renderCard = (b) => {
+        const doneList = b.lists[b.lists.length - 1];
+        const doneCount = doneList ? b.cards.filter((c) => c.listId === doneList.id).length : 0;
+        const pct = b.cards.length > 0 ? Math.round((doneCount / b.cards.length) * 100) : 0;
+
+        return (
+          <div
+            key={b.id}
+            onClick={() => onOpenBoard(b.id)}
+            className="group relative flex cursor-pointer flex-col justify-between rounded-lg border border-light-400 bg-light-50 p-4 transition-all hover:border-indigo-500/60 dark:border-dark-300 dark:bg-dark-100 dark:hover:border-indigo-500/60"
+          >
+            <div>
+              <div className="mb-2 flex items-start justify-between gap-2">
+                <span className="rounded bg-light-200 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-light-900 dark:bg-dark-200 dark:text-dark-900">
+                  {b.category}
+                </span>
+                <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                  <button
+                    onClick={() => onToggleFav(b.id)}
+                    title="Favoritar"
+                    className={`rounded p-1 hover:bg-light-200 dark:hover:bg-dark-200 ${b.favorite ? 'text-amber-400' : 'text-light-700 dark:text-dark-700'}`}
+                  >
+                    <Icon name="star" className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    onClick={() => onToggleArchive(b.id)}
+                    title={b.archived ? 'Desarquivar' : 'Arquivar'}
+                    className="rounded p-1 text-light-700 hover:bg-light-200 dark:text-dark-700 dark:hover:bg-dark-200"
+                  >
+                    <Icon name="archive" className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    onClick={() => { if (confirm('Excluir este quadro?')) onDeleteBoard(b.id); }}
+                    title="Excluir"
+                    className="rounded p-1 text-light-700 hover:bg-red-500/10 hover:text-red-500 dark:text-dark-700"
+                  >
+                    <Icon name="trash" className="h-3.5 w-3.5" />
+                  </button>
+                </div>
+              </div>
+
+              <h3 className="text-base font-bold text-light-1000 group-hover:text-indigo-500 dark:text-dark-1000">{b.name}</h3>
+              {b.description && <p className="mt-1 line-clamp-2 text-xs text-light-800 dark:text-dark-800">{b.description}</p>}
+            </div>
+
+            <div className="mt-4 flex items-center justify-between border-t border-light-300 pt-3 text-xs text-light-800 dark:border-dark-300 dark:text-dark-800">
+              <span>{b.cards.length} cards · {b.lists.length} colunas</span>
+              <div className="flex items-center gap-1.5">
+                <CircularProgress percentage={pct} size={14} />
+                <span className="font-semibold">{pct}%</span>
+              </div>
+            </div>
+          </div>
+        );
+      };
+
+      return (
+        <div className="flex-1 overflow-y-auto p-6 md:p-8 patterned-bg">
+          <div className="mx-auto max-w-6xl">
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <h1 className="text-xl font-bold">{workspace.name}</h1>
+                <p className="text-xs text-light-800 dark:text-dark-800">{workspace.description}</p>
+              </div>
+              <button
+                onClick={onOpenCreate}
+                className="inline-flex items-center gap-2 rounded-lg bg-indigo-700 px-3.5 py-2 text-xs font-semibold text-white hover:bg-indigo-600"
+              >
+                <Icon name="plus" className="h-4 w-4" /> Novo Quadro <kbd className="ml-1 rounded bg-indigo-800 px-1 text-[10px]">C</kbd>
+              </button>
+            </div>
+
+            <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
+              <div className="inline-flex rounded-lg border border-light-400 bg-light-50 p-0.5 dark:border-dark-300 dark:bg-dark-100">
+                <button
+                  onClick={() => setTab('active')}
+                  className={`rounded-md px-3 py-1.5 text-xs font-semibold ${tab === 'active' ? 'bg-light-200 text-light-1000 dark:bg-dark-200 dark:text-dark-1000' : 'text-light-800 dark:text-dark-800'}`}
+                >
+                  Ativos ({boards.filter((b) => !b.archived).length})
+                </button>
+                <button
+                  onClick={() => setTab('archived')}
+                  className={`rounded-md px-3 py-1.5 text-xs font-semibold ${tab === 'archived' ? 'bg-light-200 text-light-1000 dark:bg-dark-200 dark:text-dark-1000' : 'text-light-800 dark:text-dark-800'}`}
+                >
+                  Arquivados ({boards.filter((b) => b.archived).length})
+                </button>
+              </div>
+
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Filtrar quadros..."
+                className="w-60 rounded-lg border border-light-400 bg-light-50 px-3 py-1.5 text-xs focus:border-indigo-500 focus:outline-none dark:border-dark-300 dark:bg-dark-100"
+              />
+            </div>
+
+            {favorites.length > 0 && (
+              <div className="mb-8">
+                <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-light-800 dark:text-dark-800">Favoritos</h2>
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">{favorites.map(renderCard)}</div>
+              </div>
+            )}
+
+            <div>
+              <h2 className="mb-3 text-xs font-bold uppercase tracking-wider text-light-800 dark:text-dark-800">
+                {tab === 'archived' ? 'Quadros Arquivados' : 'Todos os Quadros'}
+              </h2>
+              {others.length === 0 && favorites.length === 0 ? (
+                <div className="rounded-xl border border-dashed border-light-400 bg-light-50/70 p-12 text-center dark:border-dark-400 dark:bg-dark-100/70">
+                  <p className="text-sm font-medium text-light-800 dark:text-dark-800">Nenhum quadro encontrado neste espaço.</p>
+                  <button onClick={onOpenCreate} className="mt-3 rounded-lg bg-indigo-700 px-3.5 py-2 text-xs font-semibold text-white hover:bg-indigo-600">
+                    Criar primeiro quadro
+                  </button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">{others.map(renderCard)}</div>
+              )}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // --- BOARD DETAIL (KANBAN + CALENDÁRIO) ---
+    function BoardDetailView({ board, onBack, onUpdateBoard, onSelectCard }) {
+      const [viewMode, setViewMode] = useState('kanban'); // kanban | calendar
+      const [filterLabelId, setFilterLabelId] = useState('');
+      const [addingCardListId, setAddingCardListId] = useState(null);
+      const [newCardTitle, setNewCardTitle] = useState('');
+      const [addingList, setAddingList] = useState(false);
+      const [newListName, setNewListName] = useState('');
+      const [draggedCardId, setDraggedCardId] = useState(null);
+
+      const visibleCards = useMemo(() => {
+        if (!filterLabelId) return board.cards;
+        return board.cards.filter((c) => c.labelIds.includes(filterLabelId));
+      }, [board.cards, filterLabelId]);
+
+      const handleCreateCard = (e, listId) => {
+        e.preventDefault();
+        if (!newCardTitle.trim()) return;
+        const prefix = board.category === 'projeto' ? 'PRJ' : 'EST';
+        const nextNum = String(board.cards.length + 1).padStart(2, '0');
+        const newCard = {
+          id: uid('card'),
+          code: `${prefix}-${nextNum}`,
+          title: newCardTitle.trim(),
+          description: '',
+          listId,
+          labelIds: [],
+          dueDate: null,
+          checklists: [],
+          activities: [{ id: uid('act'), text: 'Card criado.', createdAt: new Date().toISOString() }],
+        };
+        onUpdateBoard((b) => ({ ...b, cards: [...b.cards, newCard] }));
+        setNewCardTitle('');
+        setAddingCardListId(null);
+      };
+
+      const handleDropOnList = (targetListId) => {
+        if (!draggedCardId) return;
+        onUpdateBoard((b) => ({
+          ...b,
+          cards: b.cards.map((c) => (c.id === draggedCardId ? { ...c, listId: targetListId } : c)),
+        }));
+        setDraggedCardId(null);
+      };
+
+      const handleAddList = (e) => {
+        e.preventDefault();
+        if (!newListName.trim()) return;
+        onUpdateBoard((b) => ({
+          ...b,
+          lists: [...b.lists, { id: uid('list'), name: newListName.trim() }],
+        }));
+        setNewListName('');
+        setAddingList(false);
+      };
+
+      return (
+        <div className="flex flex-1 flex-col overflow-hidden">
+          {/* Header do Quadro */}
+          <header className="flex flex-wrap items-center justify-between gap-3 border-b border-light-400 bg-light-50 px-5 py-3 dark:border-dark-300 dark:bg-dark-100">
+            <div className="flex items-center gap-3">
+              <button onClick={onBack} className="rounded-md border border-light-400 px-2.5 py-1 text-xs font-medium hover:bg-light-200 dark:border-dark-400 dark:hover:bg-dark-200">
+                ← Quadros
+              </button>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-base font-bold">{board.name}</h1>
+                  {board.repoLink && (
+                    <a href={board.repoLink} target="_blank" rel="noreferrer" className="text-light-800 hover:text-indigo-500 dark:text-dark-800" title="Abrir repositório">
+                      <Icon name="github" className="h-4 w-4" />
+                    </a>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-2">
+              {/* Filtro por Etiqueta */}
+              <select
+                value={filterLabelId}
+                onChange={(e) => setFilterLabelId(e.target.value)}
+                className="rounded-lg border border-light-400 bg-light-100 px-2.5 py-1.5 text-xs focus:outline-none dark:border-dark-400 dark:bg-dark-200"
+              >
+                <option value="">Todas as etiquetas</option>
+                {board.labels.map((l) => (
+                  <option key={l.id} value={l.id}>{l.name}</option>
+                ))}
+              </select>
+
+              {/* Toggle Kanban / Calendário */}
+              <div className="inline-flex rounded-lg border border-light-400 bg-light-100 p-0.5 dark:border-dark-400 dark:bg-dark-200">
+                <button
+                  onClick={() => setViewMode('kanban')}
+                  className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold ${viewMode === 'kanban' ? 'bg-white text-light-1000 shadow-sm dark:bg-dark-400 dark:text-dark-1000' : 'text-light-800 dark:text-dark-800'}`}
+                >
+                  <Icon name="kanban" className="h-3.5 w-3.5" /> Kanban
+                </button>
+                <button
+                  onClick={() => setViewMode('calendar')}
+                  className={`flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs font-semibold ${viewMode === 'calendar' ? 'bg-white text-light-1000 shadow-sm dark:bg-dark-400 dark:text-dark-1000' : 'text-light-800 dark:text-dark-800'}`}
+                >
+                  <Icon name="calendar" className="h-3.5 w-3.5" /> Calendário
+                </button>
+              </div>
+            </div>
+          </header>
+
+          {viewMode === 'kanban' ? (
+            <div className="flex flex-1 gap-4 overflow-x-auto p-5 patterned-bg">
+              {board.lists.map((list) => {
+                const cards = visibleCards.filter((c) => c.listId === list.id);
+                return (
+                  <div
+                    key={list.id}
+                    onDragOver={(e) => e.preventDefault()}
+                    onDrop={() => handleDropOnList(list.id)}
+                    className="flex max-h-full w-[290px] shrink-0 flex-col rounded-xl border border-light-400 bg-light-50/90 p-3 dark:border-dark-300 dark:bg-dark-100/90"
+                  >
+                    <div className="mb-3 flex items-center justify-between px-1">
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-xs font-bold uppercase tracking-wider text-light-950 dark:text-dark-950">{list.name}</h3>
+                        <span className="rounded-full bg-light-200 px-2 py-0.5 text-[11px] font-semibold text-light-800 dark:bg-dark-300 dark:text-dark-800">
+                          {cards.length}
+                        </span>
+                      </div>
+                      <button
+                        onClick={() => { setAddingCardListId(list.id); setNewCardTitle(''); }}
+                        className="rounded p-1 text-light-800 hover:bg-light-200 dark:text-dark-800 dark:hover:bg-dark-300"
+                      >
+                        <Icon name="plus" className="h-3.5 w-3.5" />
+                      </button>
+                    </div>
+
+                    <div className="flex-1 space-y-2.5 overflow-y-auto pr-0.5">
+                      {cards.map((card) => {
+                        const allItems = card.checklists.flatMap((cl) => cl.items);
+                        const doneItems = allItems.filter((i) => i.completed).length;
+                        const pct = allItems.length > 0 ? Math.round((doneItems / allItems.length) * 100) : null;
+
+                        return (
+                          <div
+                            key={card.id}
+                            draggable
+                            onDragStart={() => setDraggedCardId(card.id)}
+                            onClick={() => onSelectCard(card.id)}
+                            className="cursor-pointer rounded-lg border border-light-400 bg-white p-3 shadow-sm transition-all hover:border-indigo-500/70 dark:border-dark-400 dark:bg-dark-200 dark:hover:border-indigo-500/70"
+                          >
+                            <div className="mb-1.5 flex items-center justify-between">
+                              <span className="font-mono text-[10px] font-semibold text-light-800 dark:text-dark-800">{card.code}</span>
+                              {card.studyHours && (
+                                <span className="text-[10px] font-medium text-indigo-600 dark:text-indigo-400">{card.studyHours}h</span>
+                              )}
+                            </div>
+
+                            <p className="text-sm font-semibold leading-snug text-light-1000 dark:text-dark-1000">{card.title}</p>
+
+                            {card.labelIds.length > 0 && (
+                              <div className="mt-2.5 flex flex-wrap gap-1">
+                                {card.labelIds.map((lid) => {
+                                  const lbl = board.labels.find((l) => l.id === lid);
+                                  if (!lbl) return null;
+                                  return (
+                                    <span
+                                      key={lid}
+                                      className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-[10px] font-semibold"
+                                      style={{ backgroundColor: `${lbl.colourCode}22`, color: lbl.colourCode }}
+                                    >
+                                      <span className="h-1.5 w-1.5 rounded-full" style={{ backgroundColor: lbl.colourCode }} />
+                                      {lbl.name}
+                                    </span>
+                                  );
+                                })}
+                              </div>
+                            )}
+
+                            {(card.dueDate || pct !== null || card.repoUrl) && (
+                              <div className="mt-3 flex items-center justify-between border-t border-light-300 pt-2 text-[11px] text-light-800 dark:border-dark-300 dark:text-dark-800">
+                                <div className="flex items-center gap-2">
+                                  {card.dueDate && (
+                                    <span className="flex items-center gap-1">
+                                      <Icon name="clock" className="h-3 w-3" />
+                                      {card.dueDate.slice(5).split('-').reverse().join('/')}
+                                    </span>
+                                  )}
+                                  {card.repoUrl && <Icon name="github" className="h-3 w-3" />}
+                                </div>
+                                {pct !== null && (
+                                  <div className="flex items-center gap-1">
+                                    <CircularProgress percentage={pct} size={13} />
+                                    <span>{doneItems}/{allItems.length}</span>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+
+                    {addingCardListId === list.id ? (
+                      <form onSubmit={(e) => handleCreateCard(e, list.id)} className="mt-2.5 space-y-2">
+                        <input
+                          autoFocus
+                          value={newCardTitle}
+                          onChange={(e) => setNewCardTitle(e.target.value)}
+                          placeholder="Título do tópico ou tarefa..."
+                          className="w-full rounded-lg border border-indigo-500 bg-white px-2.5 py-1.5 text-xs focus:outline-none dark:bg-dark-200"
+                        />
+                        <div className="flex gap-1.5">
+                          <button type="submit" className="rounded bg-indigo-700 px-2.5 py-1 text-xs font-semibold text-white hover:bg-indigo-600">Adicionar</button>
+                          <button type="button" onClick={() => setAddingCardListId(null)} className="rounded px-2 py-1 text-xs text-light-800 dark:text-dark-800">Cancelar</button>
+                        </div>
+                      </form>
+                    ) : (
+                      <button
+                        onClick={() => { setAddingCardListId(list.id); setNewCardTitle(''); }}
+                        className="mt-2.5 flex w-full items-center gap-1.5 rounded-lg px-2 py-1.5 text-xs font-medium text-light-800 hover:bg-light-200 dark:text-dark-800 dark:hover:bg-dark-200"
+                      >
+                        <Icon name="plus" className="h-3.5 w-3.5" /> Adicionar card
+                      </button>
+                    )}
+                  </div>
+                );
+              })}
+
+              {/* Adicionar nova coluna */}
+              <div className="w-[270px] shrink-0">
+                {!addingList ? (
+                  <button
+                    onClick={() => setAddingList(true)}
+                    className="flex w-full items-center gap-2 rounded-xl border border-dashed border-light-500 bg-light-50/50 px-4 py-3 text-xs font-semibold text-light-800 hover:border-indigo-500 hover:text-indigo-500 dark:border-dark-500 dark:bg-dark-100/50 dark:text-dark-800"
+                  >
+                    <Icon name="plus" className="h-4 w-4" /> Nova coluna
+                  </button>
+                ) : (
+                  <form onSubmit={handleAddList} className="space-y-2 rounded-xl border border-light-400 bg-light-50 p-3 dark:border-dark-300 dark:bg-dark-100">
+                    <input
+                      autoFocus
+                      value={newListName}
+                      onChange={(e) => setNewListName(e.target.value)}
+                      placeholder="Nome da coluna..."
+                      className="w-full rounded border border-light-500 bg-white px-2.5 py-1.5 text-xs dark:border-dark-500 dark:bg-dark-200"
+                    />
+                    <div className="flex gap-1.5">
+                      <button type="submit" className="rounded bg-indigo-700 px-3 py-1 text-xs font-semibold text-white">Criar</button>
+                      <button type="button" onClick={() => setAddingList(false)} className="px-2 py-1 text-xs text-light-800 dark:text-dark-800">Cancelar</button>
+                    </div>
+                  </form>
+                )}
+              </div>
+            </div>
+          ) : (
+            <CalendarBoardView board={board} cards={visibleCards} onSelectCard={onSelectCard} onMoveDate={(cid, date) => {
+              onUpdateBoard((b) => ({
+                ...b,
+                cards: b.cards.map((c) => (c.id === cid ? { ...c, dueDate: date } : c)),
+              }));
+            }} />
+          )}
+        </div>
+      );
+    }
+
+    // --- CALENDAR VIEW ---
+    function CalendarBoardView({ cards, onSelectCard, onMoveDate }) {
+      const [cursor, setCursor] = useState(() => new Date());
+      const [dragId, setDragId] = useState(null);
+
+      const year = cursor.getFullYear();
+      const month = cursor.getMonth();
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+      const cells = [];
+      for (let i = 0; i < firstDay; i++) cells.push(null);
+      for (let d = 1; d <= daysInMonth; d++) cells.push(d);
+
+      const monthName = cursor.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+
+      return (
+        <div className="flex flex-1 flex-col overflow-y-auto p-5 patterned-bg">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-base font-bold capitalize">{monthName}</h2>
+            <div className="flex items-center gap-1.5">
+              <button onClick={() => setCursor(new Date(year, month - 1, 1))} className="rounded-lg border border-light-400 bg-light-50 p-1.5 dark:border-dark-400 dark:bg-dark-100">
+                <Icon name="chevronLeft" />
+              </button>
+              <button onClick={() => setCursor(new Date())} className="rounded-lg border border-light-400 bg-light-50 px-3 py-1 text-xs font-semibold dark:border-dark-400 dark:bg-dark-100">
+                Hoje
+              </button>
+              <button onClick={() => setCursor(new Date(year, month + 1, 1))} className="rounded-lg border border-light-400 bg-light-50 p-1.5 dark:border-dark-400 dark:bg-dark-100">
+                <Icon name="chevronRight" />
+              </button>
             </div>
           </div>
 
-          <div id="m-feed" class="feed"></div>
-        </div>
-      </div>
-
-      <aside class="modal-side">
-        <div class="side-row">
-          <span class="side-label">Lista</span>
-          <select id="m-list" class="side-control"></select>
-        </div>
-
-        <div class="side-row">
-          <span class="side-label">Etiquetas</span>
-          <div id="m-labels-view" class="side-labels"></div>
-          <div class="rel" style="margin-top:4px">
-            <button type="button" class="btn sm" id="m-label-picker-btn">+ Gerenciar etiquetas</button>
-            <div id="m-label-pop" class="popover left" style="min-width:220px"></div>
+          <div className="grid grid-cols-7 gap-px overflow-hidden rounded-xl border border-light-400 bg-light-400 dark:border-dark-300 dark:bg-dark-300">
+            {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map((w) => (
+              <div key={w} className="bg-light-100 py-2 text-center text-xs font-bold text-light-800 dark:bg-dark-100 dark:text-dark-800">
+                {w}
+              </div>
+            ))}
+            {cells.map((day, idx) => {
+              const iso = day ? `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}` : null;
+              const dayCards = iso ? cards.filter((c) => c.dueDate === iso) : [];
+              return (
+                <div
+                  key={idx}
+                  onDragOver={(e) => iso && e.preventDefault()}
+                  onDrop={() => { if (iso && dragId) { onMoveDate(dragId, iso); setDragId(null); } }}
+                  className="min-h-[105px] bg-light-50 p-2 dark:bg-dark-50"
+                >
+                  {day && (
+                    <>
+                      <div className="mb-1 text-xs font-semibold text-light-800 dark:text-dark-800">{day}</div>
+                      <div className="space-y-1">
+                        {dayCards.map((c) => (
+                          <div
+                            key={c.id}
+                            draggable
+                            onDragStart={() => setDragId(c.id)}
+                            onClick={() => onSelectCard(c.id)}
+                            className="cursor-pointer truncate rounded bg-indigo-600/15 px-1.5 py-1 text-[11px] font-medium text-indigo-600 hover:bg-indigo-600/25 dark:text-indigo-300"
+                          >
+                            {c.code} · {c.title}
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
-
-        <div class="side-row">
-          <span class="side-label">Prazo</span>
-          <div style="display:flex;gap:6px">
-            <input type="date" id="m-due" class="side-control">
-            <button type="button" class="btn sm icon-btn" id="m-due-clear" title="Remover prazo">✕</button>
-          </div>
-        </div>
-
-        <div class="side-row">
-          <span class="side-label">Posição na lista</span>
-          <div id="m-pos-info" style="font-size:.8rem;color:var(--ink-soft)">#1</div>
-        </div>
-
-        <div class="side-row">
-          <span class="side-label">Criado em</span>
-          <div id="m-created-info" style="font-size:.78rem;color:var(--mute)">—</div>
-        </div>
-      </aside>
-    </div>
-  </div>
-</dialog>
-
-<!-- Modal Gerenciador de Etiquetas -->
-<dialog id="labels-dlg" class="small-dlg">
-  <div class="small-dlg-head">
-    <h2>Etiquetas do quadro</h2>
-    <button type="button" class="btn sm icon-btn ghost" onclick="document.getElementById('labels-dlg').close()">✕</button>
-  </div>
-  <div class="small-dlg-body">
-    <form id="new-label-form" style="margin-bottom:14px">
-      <div style="display:flex;gap:6px">
-        <input id="new-label-name" placeholder="Nome da etiqueta..." maxlength="40" required style="flex:1;background:var(--bg);border:1px solid var(--line-strong);border-radius:6px;padding:6px 9px;font-size:.84rem">
-        <button type="submit" class="btn primary">Criar</button>
-      </div>
-      <div id="new-label-swatches" class="color-swatches"></div>
-    </form>
-    <div id="labels-manage-list"></div>
-  </div>
-</dialog>
-
-<!-- Modal Lixeira (Soft Delete) -->
-<dialog id="trash-dlg" class="small-dlg" style="width:min(540px,92vw)">
-  <div class="small-dlg-head">
-    <h2>Lixeira</h2>
-    <div style="display:flex;gap:6px">
-      <button type="button" class="btn sm danger" id="empty-trash-btn">Esvaziar lixeira</button>
-      <button type="button" class="btn sm icon-btn ghost" onclick="document.getElementById('trash-dlg').close()">✕</button>
-    </div>
-  </div>
-  <div class="small-dlg-body" id="trash-list"></div>
-</dialog>
-
-<div id="toast" role="status" aria-live="polite"></div>
-
-<script>
-(function(){
-  const STORAGE_KEY = 'kanban:v1';
-  const KAN_COLOURS = [
-    { name: 'Teal', code: '#0d9488' },
-    { name: 'Green', code: '#65a30d' },
-    { name: 'Blue', code: '#0284c7' },
-    { name: 'Purple', code: '#4f46e5' },
-    { name: 'Yellow', code: '#ca8a04' },
-    { name: 'Orange', code: '#ea580c' },
-    { name: 'Red', code: '#dc2626' },
-    { name: 'Pink', code: '#db2777' }
-  ];
-
-  const uid = () => Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-3);
-  const nowIso = () => new Date().toISOString();
-  const $ = id => document.getElementById(id);
-
-  function el(tag, props, ...kids){
-    const n = document.createElement(tag);
-    if (props){
-      for (const [k, v] of Object.entries(props)){
-        if (k === 'style' && typeof v === 'object') Object.assign(n.style, v);
-        else if (k.startsWith('on') && typeof v === 'function') n[k] = v;
-        else if (v !== undefined && v !== null) n[k] = v;
-      }
+      );
     }
-    kids.forEach(k => { if (k !== null && k !== undefined && k !== false) n.append(k); });
-    return n;
-  }
 
-  function toast(msg){
-    const t = $('toast');
-    t.textContent = msg;
-    t.classList.add('show');
-    clearTimeout(toast._t);
-    toast._t = setTimeout(() => t.classList.remove('show'), 2400);
-  }
+    // --- TEMPLATES VIEW ---
+    function TemplatesView({ onUseTemplate }) {
+      return (
+        <div className="flex-1 overflow-y-auto p-6 md:p-8 patterned-bg">
+          <div className="mx-auto max-w-5xl">
+            <div className="mb-6">
+              <h1 className="text-xl font-bold">Templates de Estudos & Projetos</h1>
+              <p className="text-xs text-light-800 dark:text-dark-800">Inicie um quadro pronto em 1 clique com colunas e etiquetas configuradas.</p>
+            </div>
 
-  function defaultLabels(){
-    return [
-      { id: 'lbl-bug', name: 'Bug', colourCode: '#dc2626' },
-      { id: 'lbl-feat', name: 'Melhoria', colourCode: '#0284c7' },
-      { id: 'lbl-urg', name: 'Urgente', colourCode: '#ea580c' },
-      { id: 'lbl-ok', name: 'Pronto', colourCode: '#65a30d' }
-    ];
-  }
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              {BUILTIN_TEMPLATES.map((tpl) => (
+                <div key={tpl.id} className="flex flex-col justify-between rounded-xl border border-light-400 bg-light-50 p-5 dark:border-dark-300 dark:bg-dark-100">
+                  <div>
+                    <div className="mb-2 flex items-center justify-between">
+                      <span className="rounded bg-indigo-500/15 px-2 py-0.5 text-[10px] font-bold uppercase text-indigo-600 dark:text-indigo-400">
+                        {tpl.category}
+                      </span>
+                      <span className="text-xs text-light-800 dark:text-dark-800">{tpl.lists.length} colunas</span>
+                    </div>
+                    <h3 className="text-base font-bold">{tpl.name}</h3>
+                    <p className="mt-1 text-xs text-light-800 dark:text-dark-800">{tpl.description}</p>
 
-  function defaultState(){
-    const c1 = uid(), c2 = uid(), c3 = uid();
-    return {
-      version: 2,
-      boardName: 'Meu Kanban',
-      cardPrefix: 'KAN',
-      nextCardNumber: 3,
-      labels: defaultLabels(),
-      columns: [
-        {
-          id: c1, title: 'A fazer', index: 0, deletedAt: null,
-          cards: [
-            {
-              id: uid(), cardNumber: 1, title: 'Organizar tarefas da semana',
-              notes: 'Clique para abrir os detalhes, adicionar checklists, etiquetas ou comentários.',
-              due: '', index: 0, labelIds: ['lbl-feat'],
-              checklists: [{
-                id: uid(), name: 'Passos iniciais', index: 0,
-                items: [
-                  { id: uid(), title: 'Revisar prioridades', completed: true, index: 0 },
-                  { id: uid(), title: 'Definir prazos importantes', completed: false, index: 1 }
-                ]
-              }],
-              comments: [],
-              activities: [{ id: uid(), type: 'card.created', text: 'criou este cartão', createdAt: nowIso() }],
-              createdAt: nowIso(), deletedAt: null
+                    <div className="mt-4 flex flex-wrap gap-1.5">
+                      {tpl.lists.map((l) => (
+                        <span key={l} className="rounded border border-light-400 bg-light-100 px-2 py-0.5 text-[11px] dark:border-dark-400 dark:bg-dark-200">
+                          {l}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={() => onUseTemplate(tpl)}
+                    className="mt-5 w-full rounded-lg bg-indigo-700 py-2 text-xs font-semibold text-white hover:bg-indigo-600"
+                  >
+                    Usar este template
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // --- RESOURCES VIEW ---
+    function ResourcesView({ resources, onAdd, onToggle, onDelete }) {
+      const [title, setTitle] = useState('');
+      const [url, setUrl] = useState('');
+      const [type, setType] = useState('Documentação');
+      const [tag, setTag] = useState('');
+
+      const handleSubmit = (e) => {
+        e.preventDefault();
+        if (!title.trim()) return;
+        onAdd({
+          title: title.trim(),
+          url: url.trim() || 'https://github.com',
+          type,
+          tag: tag.trim() || 'Geral',
+        });
+        setTitle('');
+        setUrl('');
+        setTag('');
+      };
+
+      return (
+        <div className="flex-1 overflow-y-auto p-6 md:p-8 patterned-bg">
+          <div className="mx-auto max-w-4xl">
+            <div className="mb-6">
+              <h1 className="text-xl font-bold">Roteiros, Documentações & Links</h1>
+              <p className="text-xs text-light-800 dark:text-dark-800">Biblioteca pessoal de referências, cursos, artigos e repositórios.</p>
+            </div>
+
+            <form onSubmit={handleSubmit} className="mb-6 grid grid-cols-1 gap-2.5 rounded-xl border border-light-400 bg-light-50 p-4 sm:grid-cols-12 dark:border-dark-300 dark:bg-dark-100">
+              <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Título do material..." className="rounded-lg border border-light-400 bg-white px-3 py-2 text-xs sm:col-span-4 dark:border-dark-400 dark:bg-dark-200" />
+              <input value={url} onChange={(e) => setUrl(e.target.value)} placeholder="URL (https://...)" className="rounded-lg border border-light-400 bg-white px-3 py-2 text-xs sm:col-span-3 dark:border-dark-400 dark:bg-dark-200" />
+              <select value={type} onChange={(e) => setType(e.target.value)} className="rounded-lg border border-light-400 bg-white px-2.5 py-2 text-xs sm:col-span-2 dark:border-dark-400 dark:bg-dark-200">
+                <option>Documentação</option>
+                <option>Curso / Vídeo</option>
+                <option>Repositório</option>
+                <option>Artigo / PDF</option>
+              </select>
+              <input value={tag} onChange={(e) => setTag(e.target.value)} placeholder="Tag (ex: React)" className="rounded-lg border border-light-400 bg-white px-3 py-2 text-xs sm:col-span-2 dark:border-dark-400 dark:bg-dark-200" />
+              <button type="submit" className="rounded-lg bg-indigo-700 py-2 text-xs font-semibold text-white hover:bg-indigo-600 sm:col-span-1">
+                +
+              </button>
+            </form>
+
+            <div className="space-y-2">
+              {resources.map((r) => (
+                <div key={r.id} className="flex items-center justify-between rounded-lg border border-light-400 bg-light-50 px-4 py-3 dark:border-dark-300 dark:bg-dark-100">
+                  <div className="flex items-center gap-3 overflow-hidden">
+                    <input type="checkbox" checked={r.completed} onChange={() => onToggle(r.id)} className="h-4 w-4 rounded text-indigo-600" />
+                    <div className="overflow-hidden">
+                      <a href={r.url} target="_blank" rel="noreferrer" className={`flex items-center gap-1.5 text-sm font-semibold hover:text-indigo-500 ${r.completed ? 'line-through opacity-60' : ''}`}>
+                        <span className="truncate">{r.title}</span>
+                        <Icon name="external" className="h-3.5 w-3.5 shrink-0" />
+                      </a>
+                      <div className="mt-0.5 flex items-center gap-2 text-[11px] text-light-800 dark:text-dark-800">
+                        <span>{r.type}</span>
+                        <span>·</span>
+                        <span className="rounded bg-light-200 px-1.5 py-0.2 dark:bg-dark-200">{r.tag}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <button onClick={() => onDelete(r.id)} className="rounded p-1.5 text-light-700 hover:text-red-500 dark:text-dark-700">
+                    <Icon name="trash" className="h-4 w-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // --- SETTINGS & BACKUP VIEW ---
+    function SettingsView({ state, onUpdateProfile, onImportState, onReset }) {
+      const [name, setName] = useState(state.profile.name);
+      const [githubHandle, setGithubHandle] = useState(state.profile.githubHandle || '');
+
+      const handleExport = () => {
+        const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `studyflow-backup-${new Date().toISOString().slice(0, 10)}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+      };
+
+      const handleImport = (e) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+          try {
+            const parsed = JSON.parse(reader.result);
+            if (parsed.workspaces && parsed.boards) {
+              onImportState(parsed);
+              alert('Backup restaurado com sucesso!');
             }
-          ]
-        },
-        {
-          id: c2, title: 'Em andamento', index: 1, deletedAt: null,
-          cards: [
-            {
-              id: uid(), cardNumber: 2, title: 'Explorar o visual inspirado no Kan',
-              notes: '', due: new Date(Date.now() + 86400000 * 2).toISOString().slice(0,10),
-              index: 0, labelIds: ['lbl-urg'], checklists: [], comments: [],
-              activities: [{ id: uid(), type: 'card.created', text: 'criou este cartão', createdAt: nowIso() }],
-              createdAt: nowIso(), deletedAt: null
-            }
-          ]
-        },
-        { id: c3, title: 'Concluído', index: 2, deletedAt: null, cards: [] }
-      ]
-    };
-  }
-
-  // Migração automática do formato v1 (prioridades -> etiquetas, indices sequenciais, etc.)
-  function migrateState(raw){
-    if (!raw || !Array.isArray(raw.columns)) return defaultState();
-    const st = {
-      version: 2,
-      boardName: raw.boardName || 'Meu Kanban',
-      cardPrefix: raw.cardPrefix || 'KAN',
-      nextCardNumber: Number.isFinite(raw.nextCardNumber) ? raw.nextCardNumber : 1,
-      labels: Array.isArray(raw.labels) ? raw.labels : defaultLabels(),
-      columns: []
-    };
-
-    const prioMap = {
-      alta: { id: 'lbl-prio-alta', name: 'Alta', colourCode: '#dc2626' },
-      media: { id: 'lbl-prio-media', name: 'Média', colourCode: '#ca8a04' },
-      baixa: { id: 'lbl-prio-baixa', name: 'Baixa', colourCode: '#0d9488' }
-    };
-
-    let maxNum = st.nextCardNumber - 1;
-
-    st.columns = raw.columns.map((col, colIdx) => {
-      const cards = Array.isArray(col.cards) ? col.cards.map((c, cIdx) => {
-        const labelIds = Array.isArray(c.labelIds) ? [...c.labelIds] : [];
-        if (c.prio && prioMap[c.prio]){
-          const pDef = prioMap[c.prio];
-          if (!st.labels.some(l => l.id === pDef.id)) st.labels.push({ ...pDef });
-          if (!labelIds.includes(pDef.id)) labelIds.push(pDef.id);
-        }
-        let cardNumber = c.cardNumber;
-        if (cardNumber == null){
-          maxNum += 1;
-          cardNumber = maxNum;
-        } else if (cardNumber > maxNum){
-          maxNum = cardNumber;
-        }
-        return {
-          id: c.id || uid(),
-          cardNumber,
-          title: c.title || 'Sem título',
-          notes: c.notes || '',
-          due: c.due || '',
-          index: cIdx,
-          labelIds,
-          checklists: Array.isArray(c.checklists) ? c.checklists : [],
-          comments: Array.isArray(c.comments) ? c.comments : [],
-          activities: Array.isArray(c.activities) && c.activities.length
-            ? c.activities
-            : [{ id: uid(), type: 'card.created', text: 'criou este cartão', createdAt: c.createdAt || nowIso() }],
-          createdAt: c.createdAt || nowIso(),
-          deletedAt: c.deletedAt || null
+          } catch {
+            alert('Arquivo JSON inválido.');
+          }
         };
-      }) : [];
-
-      return {
-        id: col.id || uid(),
-        title: col.title || 'Sem nome',
-        index: colIdx,
-        deletedAt: col.deletedAt || null,
-        cards
+        reader.readAsText(file);
       };
-    });
 
-    st.nextCardNumber = maxNum + 1;
-    return st;
-  }
+      return (
+        <div className="flex-1 overflow-y-auto p-6 md:p-8 patterned-bg">
+          <div className="mx-auto max-w-2xl space-y-6">
+            <div>
+              <h1 className="text-xl font-bold">Configurações & Backup Local</h1>
+              <p className="text-xs text-light-800 dark:text-dark-800">Todos os dados ficam salvos automaticamente no seu navegador (localStorage).</p>
+            </div>
 
-  let state;
-  try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    state = saved ? migrateState(JSON.parse(saved)) : defaultState();
-  } catch(e){
-    state = defaultState();
-  }
+            <div className="space-y-4 rounded-xl border border-light-400 bg-light-50 p-5 dark:border-dark-300 dark:bg-dark-100">
+              <h2 className="text-sm font-bold">Perfil Pessoal</h2>
+              <div>
+                <label className="mb-1 block text-xs text-light-800 dark:text-dark-800">Nome de exibição</label>
+                <input value={name} onChange={(e) => setName(e.target.value)} className="w-full rounded-lg border border-light-400 bg-white px-3 py-2 text-sm dark:border-dark-400 dark:bg-dark-200" />
+              </div>
+              <div>
+                <label className="mb-1 block text-xs text-light-800 dark:text-dark-800">Usuário do GitHub</label>
+                <input value={githubHandle} onChange={(e) => setGithubHandle(e.target.value)} placeholder="seu-usuario" className="w-full rounded-lg border border-light-400 bg-white px-3 py-2 text-sm dark:border-dark-400 dark:bg-dark-200" />
+              </div>
+              <button
+                onClick={() => { onUpdateProfile({ ...state.profile, name, githubHandle }); alert('Perfil atualizado!'); }}
+                className="rounded-lg bg-indigo-700 px-4 py-2 text-xs font-semibold text-white hover:bg-indigo-600"
+              >
+                Salvar perfil
+              </button>
+            </div>
 
-  // Garante índices sequenciais por lista e entre listas
-  function normalizeIndices(){
-    let colIdx = 0;
-    state.columns.forEach(col => {
-      if (!col.deletedAt){
-        col.index = colIdx++;
-      }
-      let cardIdx = 0;
-      col.cards.forEach(card => {
-        if (!card.deletedAt){
-          card.index = cardIdx++;
-        }
-      });
-    });
-  }
-
-  function save(){
-    normalizeIndices();
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e){}
-  }
-
-  // Estado de UI
-  let query = '';
-  let filters = { labels: [], due: [] }; // due: 'overdue' | 'today' | 'upcoming' | 'none'
-  let activeCardId = null;
-  let activityOrder = 'newest'; // 'newest' | 'oldest'
-  let dragState = null; // { type: 'CARD'|'LANE', id, sourceColId }
-  let selectedNewLabelColor = KAN_COLOURS[0].code;
-
-  // Helpers de dados
-  const activeColumns = () => state.columns.filter(c => !c.deletedAt).sort((a,b) => a.index - b.index);
-  const activeCardsInCol = col => col.cards.filter(c => !c.deletedAt).sort((a,b) => a.index - b.index);
-
-  function findCard(cardId, includeDeleted = false){
-    for (const col of state.columns){
-      const idx = col.cards.findIndex(c => c.id === cardId && (includeDeleted || !c.deletedAt));
-      if (idx > -1) return { col, idx, card: col.cards[idx] };
-    }
-    return null;
-  }
-
-  function logActivity(card, type, text){
-    card.activities.push({
-      id: uid(),
-      type,
-      text,
-      createdAt: nowIso()
-    });
-  }
-
-  // Formatação de datas
-  const todayStr = () => new Date().toISOString().slice(0,10);
-  function fmtDateShort(isoDate){
-    if (!isoDate) return '';
-    const [y, m, d] = isoDate.split('-');
-    const months = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
-    const curYear = String(new Date().getFullYear());
-    return y === curYear ? `${Number(d)} ${months[Number(m)-1]}` : `${Number(d)} ${months[Number(m)-1]} ${y}`;
-  }
-  function fmtRelTime(iso){
-    const diff = Math.max(0, Date.now() - new Date(iso).getTime());
-    const min = Math.floor(diff / 60000);
-    if (min < 1) return 'agora mesmo';
-    if (min < 60) return `há ${min} min`;
-    const hr = Math.floor(min / 60);
-    if (hr < 24) return `há ${hr}h`;
-    const days = Math.floor(hr / 24);
-    if (days < 30) return `há ${days}d`;
-    return new Date(iso).toLocaleDateString('pt-BR');
-  }
-
-  // Filtro de cartões
-  function matchesFilters(card){
-    const q = query.trim().toLowerCase();
-    if (q){
-      const numTag = `${state.cardPrefix}-${card.cardNumber}`.toLowerCase();
-      const hay = `${card.title} ${card.notes} ${numTag}`.toLowerCase();
-      if (!hay.includes(q)) return false;
-    }
-    if (filters.labels.length > 0){
-      if (!filters.labels.some(lid => card.labelIds.includes(lid))) return false;
-    }
-    if (filters.due.length > 0){
-      const t = todayStr();
-      const matchedDue = filters.due.some(f => {
-        if (f === 'none') return !card.due;
-        if (!card.due) return false;
-        if (f === 'overdue') return card.due < t;
-        if (f === 'today') return card.due === t;
-        if (f === 'upcoming') return card.due > t;
-        return false;
-      });
-      if (!matchedDue) return false;
-    }
-    return true;
-  }
-
-  // SVG CircularProgress (Kan style)
-  function renderCircularProgress(done, total){
-    const r = 40;
-    const c = 2 * Math.PI * r;
-    const pct = total > 0 ? Math.round((done / total) * 100) : 0;
-    const visualPct = pct === 0 ? 3 : pct;
-    const offset = c - (visualPct / 100) * c;
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('viewBox', '0 0 100 100');
-    svg.setAttribute('width', '14');
-    svg.setAttribute('height', '14');
-    svg.setAttribute('class', 'cl-ring');
-    svg.innerHTML = `
-      <circle cx="50" cy="50" r="${r}" stroke-width="14" class="cl-ring-bg"></circle>
-      <circle cx="50" cy="50" r="${r}" stroke-width="14" stroke-dasharray="${c}" stroke-dashoffset="${offset}" class="cl-ring-fg ${pct === 100 ? 'complete' : ''}"></circle>
-    `;
-    return svg;
-  }
-
-  // Render principal do quadro
-  function render(){
-    $('board-title').value = state.boardName;
-    $('prefix-btn').textContent = state.cardPrefix;
-    updateBadges();
-
-    const board = $('board');
-    board.replaceChildren();
-
-    const cols = activeColumns();
-    cols.forEach((col, visualColIdx) => {
-      board.append(renderLane(col, visualColIdx === cols.length - 1));
-    });
-
-    board.append(el('button', {
-      type: 'button',
-      className: 'new-lane-btn',
-      textContent: '+ Nova lista',
-      onclick: addColumn
-    }));
-
-    if (activeCardId && $('card-dlg').open){
-      renderCardModal();
-    }
-  }
-
-  function updateBadges(){
-    const fCount = filters.labels.length + filters.due.length;
-    const fBadge = $('filter-badge');
-    fBadge.textContent = fCount;
-    fBadge.hidden = fCount === 0;
-
-    let trashCount = 0;
-    state.columns.forEach(col => {
-      if (col.deletedAt) trashCount++;
-      else col.cards.forEach(c => { if (c.deletedAt) trashCount++; });
-    });
-    const tBadge = $('trash-badge');
-    tBadge.textContent = trashCount;
-    tBadge.hidden = trashCount === 0;
-  }
-
-  function renderLane(col, isLastCol){
-    const allActive = activeCardsInCol(col);
-    const shown = allActive.filter(matchesFilters);
-
-    const lane = el('section', { className: 'lane' });
-    lane.dataset.colId = col.id;
-
-    // Cabeçalho da lista (também arrastável para reordenar listas)
-    const head = el('div', { className: 'lane-head', draggable: true });
-
-    const titleInput = el('input', {
-      className: 'lane-title',
-      value: col.title,
-      ariaLabel: 'Nome da lista',
-      onclick: e => e.stopPropagation(),
-      onchange: () => {
-        const val = titleInput.value.trim();
-        if (val && val !== col.title){
-          col.title = val;
-          save();
-          render();
-        } else {
-          titleInput.value = col.title;
-        }
-      },
-      onkeydown: e => { if (e.key === 'Enter') titleInput.blur(); }
-    });
-
-    const addTopBtn = el('button', {
-      type: 'button',
-      className: 'lane-icon-btn',
-      title: 'Adicionar cartão',
-      innerHTML: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg>',
-      onclick: e => { e.stopPropagation(); createNewCardPrompt(col.id, 'start'); }
-    });
-
-    const menuWrap = el('div', { className: 'rel' });
-    const pop = el('div', { className: 'popover', style: { minWidth: '175px' } });
-    pop.append(
-      el('button', {
-        type: 'button', className: 'pop-item', textContent: '+ Adicionar cartão',
-        onclick: () => { closeAllPopovers(); createNewCardPrompt(col.id, 'end'); }
-      }),
-      el('button', {
-        type: 'button', className: 'pop-item danger', textContent: 'Mover lista para lixeira',
-        onclick: () => {
-          closeAllPopovers();
-          col.deletedAt = nowIso();
-          save();
-          render();
-          toast(`Lista "${col.title}" movida para a lixeira`);
-        }
-      })
-    );
-
-    const moreLaneBtn = el('button', {
-      type: 'button',
-      className: 'lane-icon-btn',
-      title: 'Opções da lista',
-      innerHTML: '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>',
-      onclick: e => {
-        e.stopPropagation();
-        const wasOpen = pop.classList.contains('open');
-        closeAllPopovers();
-        if (!wasOpen) pop.classList.add('open');
-      }
-    });
-    menuWrap.append(moreLaneBtn, pop);
-
-    head.append(titleInput, el('span', { className: 'lane-count', textContent: shown.length }), addTopBtn, menuWrap);
-
-    // Drag de Lista
-    head.ondragstart = e => {
-      if (document.activeElement === titleInput) { e.preventDefault(); return; }
-      dragState = { type: 'LANE', id: col.id };
-      e.dataTransfer.effectAllowed = 'move';
-      e.dataTransfer.setData('text/plain', col.id);
-      setTimeout(() => lane.classList.add('dragging-lane'), 0);
-    };
-    head.ondragend = () => {
-      dragState = null;
-      document.querySelectorAll('.dragging-lane,.lane-drop-target').forEach(n => n.classList.remove('dragging-lane','lane-drop-target'));
-    };
-
-    const listEl = el('div', { className: 'cards' });
-    shown.forEach(card => listEl.append(renderCard(card, col, isLastCol)));
-
-    if (!shown.length){
-      listEl.append(el('div', {
-        className: 'empty-lane',
-        textContent: (query || filters.labels.length || filters.due.length) ? 'Nenhum cartão corresponde ao filtro' : 'Arraste cartões para cá'
-      }));
+            <div className="space-y-3 rounded-xl border border-light-400 bg-light-50 p-5 dark:border-dark-300 dark:bg-dark-100">
+              <h2 className="text-sm font-bold">Portabilidade & GitHub</h2>
+              <p className="text-xs text-light-800 dark:text-dark-800">
+                Como você vai hospedar no GitHub, use o backup JSON para transferir seus quadros entre navegadores ou computadores diferentes.
+              </p>
+              <div className="flex flex-wrap gap-2.5 pt-1">
+                <button onClick={handleExport} className="inline-flex items-center gap-2 rounded-lg bg-indigo-700 px-3.5 py-2 text-xs font-semibold text-white hover:bg-indigo-600">
+                  <Icon name="download" className="h-4 w-4" /> Exportar JSON
+                </button>
+                <label className="inline-flex cursor-pointer items-center gap-2 rounded-lg border border-light-500 bg-white px-3.5 py-2 text-xs font-semibold hover:bg-light-200 dark:border-dark-500 dark:bg-dark-200 dark:hover:bg-dark-300">
+                  <Icon name="upload" className="h-4 w-4" /> Importar JSON
+                  <input type="file" accept=".json" onChange={handleImport} className="hidden" />
+                </label>
+                <button onClick={onReset} className="rounded-lg border border-red-500/40 px-3.5 py-2 text-xs font-semibold text-red-500 hover:bg-red-500/10">
+                  Resetar exemplo
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
     }
 
-    const addBottomBtn = el('button', {
-      type: 'button',
-      className: 'add-card-inline',
-      innerHTML: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg><span>Adicionar cartão</span>',
-      onclick: () => createNewCardPrompt(col.id, 'end')
-    });
+    // --- CARD MODAL ---
+    function CardModal({ board, card, onClose, onUpdateCard, onDeleteCard, onCreateLabel }) {
+      const [title, setTitle] = useState(card.title);
+      const [description, setDescription] = useState(card.description);
+      const [repoUrl, setRepoUrl] = useState(card.repoUrl || '');
+      const [studyHours, setStudyHours] = useState(card.studyHours ?? '');
+      const [newClName, setNewClName] = useState('');
+      const [addingCl, setAddingCl] = useState(false);
+      const [itemDrafts, setItemDrafts] = useState({});
+      const [comment, setComment] = useState('');
+      const [creatingLbl, setCreatingLbl] = useState(false);
+      const [lblName, setLblName] = useState('');
+      const [lblColor, setLblColor] = useState(PRESET_COLORS[0]);
 
-    lane.append(head, listEl, addBottomBtn);
-
-    // Drag & Drop handlers na coluna
-    lane.addEventListener('dragover', e => {
-      if (!dragState) return;
-      e.preventDefault();
-      if (dragState.type === 'CARD'){
-        lane.classList.add('over');
-      } else if (dragState.type === 'LANE' && dragState.id !== col.id){
-        lane.classList.add('lane-drop-target');
-      }
-    });
-    lane.addEventListener('dragleave', e => {
-      if (!lane.contains(e.relatedTarget)){
-        lane.classList.remove('over', 'lane-drop-target');
-      }
-    });
-    lane.addEventListener('drop', e => {
-      e.preventDefault();
-      lane.classList.remove('over', 'lane-drop-target');
-      if (!dragState) return;
-      if (dragState.type === 'CARD'){
-        dropCard(col, listEl, e.clientY);
-      } else if (dragState.type === 'LANE' && dragState.id !== col.id){
-        dropLane(dragState.id, col.id);
-      }
-    });
-
-    return lane;
-  }
-
-  function renderCard(c, col, isLastCol){
-    const card = el('div', { className: 'card', draggable: true, tabIndex: 0 });
-    card.dataset.id = c.id;
-
-    // Número estilo Kan (KAN-1)
-    card.append(el('span', { className: 'card-num', textContent: `${state.cardPrefix}-${c.cardNumber}` }));
-    card.append(el('div', { className: 'card-title', textContent: c.title }));
-
-    const cardLabels = c.labelIds
-      .map(lid => state.labels.find(l => l.id === lid))
-      .filter(Boolean);
-
-    const hasNotes = (c.notes || '').trim().length > 0;
-    const hasDue = !!c.due;
-    const commentCount = (c.comments || []).length;
-    const totalCl = (c.checklists || []).reduce((acc, cl) => acc + cl.items.length, 0);
-    const doneCl = (c.checklists || []).reduce((acc, cl) => acc + cl.items.filter(i => i.completed).length, 0);
-
-    if (cardLabels.length || hasNotes || hasDue || commentCount > 0 || totalCl > 0){
-      const footer = el('div', { className: 'card-footer' });
-
-      if (cardLabels.length){
-        const labelsRow = el('div', { className: 'card-labels' });
-        cardLabels.forEach(lbl => {
-          labelsRow.append(el('span', { className: 'badge' },
-            el('span', { className: 'badge-dot', style: { backgroundColor: lbl.colourCode } }),
-            el('span', { textContent: lbl.name })
-          ));
+      const saveBasics = (extra = {}) => {
+        onUpdateCard({
+          ...card,
+          title: title.trim() || card.title,
+          description,
+          repoUrl: repoUrl.trim() || undefined,
+          studyHours: studyHours !== '' ? Number(studyHours) : undefined,
+          ...extra,
         });
-        footer.append(labelsRow);
-      }
+      };
 
-      if (hasNotes || hasDue || commentCount > 0 || totalCl > 0){
-        const metaRow = el('div', { className: 'card-meta-row' });
-        const left = el('div', { className: 'card-meta-left' });
+      return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-3 sm:p-6 backdrop-blur-[2px]" onClick={() => { saveBasics(); onClose(); }}>
+          <div className="flex max-h-[90vh] w-full max-w-4xl flex-col overflow-hidden rounded-xl border border-light-500 bg-light-50 shadow-3xl-light dark:border-dark-500 dark:bg-dark-100 dark:shadow-3xl-dark" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between border-b border-light-400 px-5 py-3 dark:border-dark-300">
+              <div className="flex items-center gap-2 text-xs">
+                <span className="font-bold">{board.name}</span>
+                <span className="text-light-700 dark:text-dark-700">/</span>
+                <span className="rounded bg-light-200 px-1.5 py-0.5 font-mono font-semibold text-indigo-600 dark:bg-dark-300 dark:text-indigo-400">{card.code}</span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                <button onClick={() => { if (confirm('Excluir este card?')) { onDeleteCard(card.id); onClose(); } }} className="rounded p-1.5 text-light-800 hover:bg-red-500/10 hover:text-red-500 dark:text-dark-800">
+                  <Icon name="trash" />
+                </button>
+                <button onClick={() => { saveBasics(); onClose(); }} className="rounded p-1.5 text-light-800 hover:bg-light-200 dark:text-dark-800 dark:hover:bg-dark-300">
+                  <Icon name="x" />
+                </button>
+              </div>
+            </div>
 
-        if (hasNotes){
-          left.append(el('span', {
-            className: 'meta-item',
-            title: 'Tem descrição',
-            innerHTML: '<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="18" y2="18"/></svg>'
-          }));
+            <div className="grid flex-1 grid-cols-1 overflow-y-auto md:grid-cols-3">
+              <div className="space-y-5 border-b border-light-400 p-6 md:col-span-2 md:border-b-0 md:border-r dark:border-dark-300">
+                <input
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  onBlur={() => saveBasics()}
+                  className="w-full bg-transparent text-lg font-bold focus:outline-none"
+                />
+
+                <div>
+                  <label className="mb-1.5 block text-xs font-semibold text-light-800 dark:text-dark-800">Anotações & Resumo</label>
+                  <textarea
+                    rows={4}
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    onBlur={() => saveBasics()}
+                    placeholder="Escreva conceitos, comandos ou critérios..."
+                    className="w-full rounded-lg border border-light-400 bg-white p-3 text-sm focus:border-indigo-500 focus:outline-none dark:border-dark-400 dark:bg-dark-200"
+                  />
+                </div>
+
+                {/* Checklists */}
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-bold uppercase tracking-wider text-light-800 dark:text-dark-800">Checklists</span>
+                    <button onClick={() => setAddingCl(true)} className="rounded-md border border-light-500 px-2.5 py-1 text-xs font-medium hover:bg-light-200 dark:border-dark-500 dark:hover:bg-dark-300">
+                      + Nova checklist
+                    </button>
+                  </div>
+
+                  {addingCl && (
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        if (!newClName.trim()) return;
+                        onUpdateCard({ ...card, checklists: [...card.checklists, { id: uid('chk'), name: newClName.trim(), items: [] }] });
+                        setNewClName('');
+                        setAddingCl(false);
+                      }}
+                      className="flex gap-2"
+                    >
+                      <input autoFocus value={newClName} onChange={(e) => setNewClName(e.target.value)} placeholder="Nome da checklist..." className="flex-1 rounded border border-light-400 bg-white px-2.5 py-1.5 text-xs dark:border-dark-400 dark:bg-dark-200" />
+                      <button type="submit" className="rounded bg-indigo-700 px-3 py-1 text-xs font-semibold text-white">Criar</button>
+                    </form>
+                  )}
+
+                  {card.checklists.map((cl) => {
+                    const done = cl.items.filter((i) => i.completed).length;
+                    const pct = cl.items.length > 0 ? Math.round((done / cl.items.length) * 100) : 0;
+                    return (
+                      <div key={cl.id} className="rounded-lg border border-light-400 bg-light-100/60 p-3.5 dark:border-dark-400 dark:bg-dark-200/50">
+                        <div className="mb-2 flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <CircularProgress percentage={pct} size={15} />
+                            <span className="text-sm font-bold">{cl.name}</span>
+                            <span className="text-xs text-light-800 dark:text-dark-800">{done}/{cl.items.length}</span>
+                          </div>
+                          <button onClick={() => onUpdateCard({ ...card, checklists: card.checklists.filter((x) => x.id !== cl.id) })} className="text-xs text-light-800 hover:text-red-500 dark:text-dark-800">
+                            Remover
+                          </button>
+                        </div>
+
+                        <div className="space-y-1.5">
+                          {cl.items.map((it) => (
+                            <label key={it.id} className="flex cursor-pointer items-center gap-2 rounded px-1.5 py-1 hover:bg-light-200 dark:hover:bg-dark-300">
+                              <input
+                                type="checkbox"
+                                checked={it.completed}
+                                onChange={() =>
+                                  onUpdateCard({
+                                    ...card,
+                                    checklists: card.checklists.map((c) =>
+                                      c.id === cl.id ? { ...c, items: c.items.map((x) => (x.id === it.id ? { ...x, completed: !x.completed } : x)) } : c
+                                    ),
+                                  })
+                                }
+                                className="h-4 w-4 rounded text-indigo-600"
+                              />
+                              <span className={`text-sm ${it.completed ? 'line-through opacity-60' : ''}`}>{it.title}</span>
+                            </label>
+                          ))}
+                        </div>
+
+                        <input
+                          value={itemDrafts[cl.id] || ''}
+                          onChange={(e) => setItemDrafts((p) => ({ ...p, [cl.id]: e.target.value }))}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              const txt = (itemDrafts[cl.id] || '').trim();
+                              if (!txt) return;
+                              onUpdateCard({
+                                ...card,
+                                checklists: card.checklists.map((c) => (c.id === cl.id ? { ...c, items: [...c.items, { id: uid('ci'), title: txt, completed: false }] } : c)),
+                              });
+                              setItemDrafts((p) => ({ ...p, [cl.id]: '' }));
+                            }
+                          }}
+                          placeholder="+ Adicionar item e pressionar Enter..."
+                          className="mt-2.5 w-full rounded border border-light-400 bg-white px-2.5 py-1.5 text-xs dark:border-dark-400 dark:bg-dark-100"
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Diário */}
+                <div className="space-y-2.5 border-t border-light-400 pt-4 dark:border-dark-300">
+                  <span className="block text-xs font-bold uppercase tracking-wider text-light-800 dark:text-dark-800">Diário de Progresso</span>
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      if (!comment.trim()) return;
+                      onUpdateCard({ ...card, activities: [{ id: uid('act'), text: comment.trim(), createdAt: new Date().toISOString() }, ...card.activities] });
+                      setComment('');
+                    }}
+                    className="flex gap-2"
+                  >
+                    <input value={comment} onChange={(e) => setComment(e.target.value)} placeholder="Registrar nota de estudo ou commit..." className="flex-1 rounded-lg border border-light-400 bg-white px-3 py-2 text-xs dark:border-dark-400 dark:bg-dark-200" />
+                    <button type="submit" className="rounded-lg bg-indigo-700 px-3.5 py-2 text-xs font-semibold text-white">Registrar</button>
+                  </form>
+                  <div className="space-y-1.5">
+                    {card.activities.map((a) => (
+                      <div key={a.id} className="rounded-lg border border-light-300 bg-light-100 px-3 py-2 text-xs dark:border-dark-300 dark:bg-dark-200">
+                        <p>{a.text}</p>
+                        <span className="text-[10px] text-light-800 dark:text-dark-800">{new Date(a.createdAt).toLocaleString('pt-BR')}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* Sidebar do Card */}
+              <div className="space-y-4 bg-light-100/50 p-5 dark:bg-dark-50/40">
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-light-800 dark:text-dark-800">Coluna / Status</label>
+                  <select value={card.listId} onChange={(e) => onUpdateCard({ ...card, listId: e.target.value })} className="w-full rounded-lg border border-light-400 bg-white px-3 py-2 text-xs dark:border-dark-400 dark:bg-dark-200">
+                    {board.lists.map((l) => <option key={l.id} value={l.id}>{l.name}</option>)}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-light-800 dark:text-dark-800">Data Alvo</label>
+                  <input type="date" value={card.dueDate || ''} onChange={(e) => onUpdateCard({ ...card, dueDate: e.target.value || null })} className="w-full rounded-lg border border-light-400 bg-white px-3 py-2 text-xs dark:border-dark-400 dark:bg-dark-200" />
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-light-800 dark:text-dark-800">Horas Estimadas</label>
+                  <input type="number" step="0.5" min="0" value={studyHours} onChange={(e) => setStudyHours(e.target.value)} onBlur={() => saveBasics()} placeholder="Ex: 2.5" className="w-full rounded-lg border border-light-400 bg-white px-3 py-2 text-xs dark:border-dark-400 dark:bg-dark-200" />
+                </div>
+
+                <div>
+                  <label className="mb-1 block text-xs font-semibold text-light-800 dark:text-dark-800">Link GitHub / Material</label>
+                  <div className="flex gap-1.5">
+                    <input value={repoUrl} onChange={(e) => setRepoUrl(e.target.value)} onBlur={() => saveBasics()} placeholder="https://github.com/..." className="w-full rounded-lg border border-light-400 bg-white px-3 py-2 text-xs dark:border-dark-400 dark:bg-dark-200" />
+                    {repoUrl && (
+                      <a href={repoUrl} target="_blank" rel="noreferrer" className="flex items-center justify-center rounded-lg border border-light-400 bg-white px-2.5 dark:border-dark-400 dark:bg-dark-200">
+                        <Icon name="external" className="h-3.5 w-3.5" />
+                      </a>
+                    )}
+                  </div>
+                </div>
+
+                <div>
+                  <div className="mb-2 flex items-center justify-between">
+                    <label className="text-xs font-semibold text-light-800 dark:text-dark-800">Etiquetas</label>
+                    <button onClick={() => setCreatingLbl(!creatingLbl)} className="text-xs font-medium text-indigo-600 dark:text-indigo-400">+ Criar</button>
+                  </div>
+
+                  {creatingLbl && (
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        if (!lblName.trim()) return;
+                        const id = onCreateLabel(lblName.trim(), lblColor);
+                        onUpdateCard({ ...card, labelIds: [...card.labelIds, id] });
+                        setLblName('');
+                        setCreatingLbl(false);
+                      }}
+                      className="mb-2.5 space-y-2 rounded-lg border border-light-400 bg-white p-2.5 dark:border-dark-400 dark:bg-dark-200"
+                    >
+                      <input autoFocus value={lblName} onChange={(e) => setLblName(e.target.value)} placeholder="Nome da etiqueta..." className="w-full rounded border border-light-400 bg-transparent px-2 py-1 text-xs dark:border-dark-400" />
+                      <div className="flex flex-wrap gap-1.5">
+                        {PRESET_COLORS.map((c) => (
+                          <button key={c} type="button" onClick={() => setLblColor(c)} style={{ backgroundColor: c }} className={`h-4 w-4 rounded-full ${lblColor === c ? 'ring-2 ring-indigo-400' : ''}`} />
+                        ))}
+                      </div>
+                      <button type="submit" className="w-full rounded bg-indigo-700 py-1 text-xs font-semibold text-white">Salvar</button>
+                    </form>
+                  )}
+
+                  <div className="flex flex-wrap gap-1.5">
+                    {board.labels.map((l) => {
+                      const active = card.labelIds.includes(l.id);
+                      return (
+                        <button
+                          key={l.id}
+                          onClick={() =>
+                            onUpdateCard({
+                              ...card,
+                              labelIds: active ? card.labelIds.filter((x) => x !== l.id) : [...card.labelIds, l.id],
+                            })
+                          }
+                          className={`inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs font-medium ${
+                            active ? 'border-indigo-500 bg-indigo-500/15' : 'border-light-400 bg-white opacity-70 dark:border-dark-400 dark:bg-dark-200'
+                          }`}
+                        >
+                          <span className="h-2 w-2 rounded-full" style={{ backgroundColor: l.colourCode }} />
+                          {l.name}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // --- CREATE BOARD MODAL ---
+    function CreateBoardModal({ onClose, onCreate }) {
+      const [name, setName] = useState('');
+      const [description, setDescription] = useState('');
+      const [category, setCategory] = useState('estudos');
+      const [repoLink, setRepoLink] = useState('');
+
+      return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4 backdrop-blur-[2px]" onClick={onClose}>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!name.trim()) return;
+              onCreate({ name: name.trim(), description: description.trim(), category, repoLink: repoLink.trim() });
+            }}
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md space-y-4 rounded-xl border border-light-500 bg-light-50 p-5 shadow-3xl-light dark:border-dark-500 dark:bg-dark-100 dark:shadow-3xl-dark"
+          >
+            <div className="flex items-center justify-between">
+              <h2 className="text-base font-bold">Novo Quadro</h2>
+              <button type="button" onClick={onClose} className="rounded p-1 text-light-800 hover:bg-light-200 dark:text-dark-800 dark:hover:bg-dark-300">
+                <Icon name="x" />
+              </button>
+            </div>
+
+            <div>
+              <label className="mb-1 block text-xs font-semibold text-light-800 dark:text-dark-800">Nome do Quadro</label>
+              <input autoFocus required value={name} onChange={(e) => setName(e.target.value)} placeholder="Ex: Cálculo II, API em Rust, TCC..." className="w-full rounded-lg border border-light-400 bg-white px-3 py-2 text-sm dark:border-dark-400 dark:bg-dark-200" />
+            </div>
+
+            <div>
+              <label className="mb-1 block text-xs font-semibold text-light-800 dark:text-dark-800">Categoria</label>
+              <select value={category} onChange={(e) => setCategory(e.target.value)} className="w-full rounded-lg border border-light-400 bg-white px-3 py-2 text-sm dark:border-dark-400 dark:bg-dark-200">
+                <option value="estudos">Estudos / Disciplina</option>
+                <option value="projeto">Projeto / Código</option>
+                <option value="pesquisa">Pesquisa / Artigo</option>
+              </select>
+            </div>
+
+            <div>
+              <label className="mb-1 block text-xs font-semibold text-light-800 dark:text-dark-800">Descrição (opcional)</label>
+              <input value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Objetivo principal deste quadro..." className="w-full rounded-lg border border-light-400 bg-white px-3 py-2 text-sm dark:border-dark-400 dark:bg-dark-200" />
+            </div>
+
+            <div>
+              <label className="mb-1 block text-xs font-semibold text-light-800 dark:text-dark-800">Link do Repositório GitHub (opcional)</label>
+              <input value={repoLink} onChange={(e) => setRepoLink(e.target.value)} placeholder="https://github.com/..." className="w-full rounded-lg border border-light-400 bg-white px-3 py-2 text-sm dark:border-dark-400 dark:bg-dark-200" />
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button type="button" onClick={onClose} className="rounded-lg px-3.5 py-2 text-xs font-medium text-light-800 hover:bg-light-200 dark:text-dark-800 dark:hover:bg-dark-300">Cancelar</button>
+              <button type="submit" className="rounded-lg bg-indigo-700 px-4 py-2 text-xs font-semibold text-white hover:bg-indigo-600">Criar Quadro</button>
+            </div>
+          </form>
+        </div>
+      );
+    }
+
+    // --- COMMAND PALETTE ---
+    function CommandPalette({ boards, onClose, onOpenBoard, onOpenCard, onNavigate }) {
+      const [q, setQ] = useState('');
+      const items = useMemo(() => {
+        const term = q.trim().toLowerCase();
+        const res = [];
+        if (!term) {
+          res.push(
+            { id: 'n1', title: 'Ir para Quadros', sub: 'G → B', act: () => onNavigate('boards') },
+            { id: 'n2', title: 'Ir para Templates', sub: 'G → T', act: () => onNavigate('templates') },
+            { id: 'n3', title: 'Ir para Roteiros & Links', sub: 'G → R', act: () => onNavigate('resources') },
+            { id: 'n4', title: 'Ir para Configurações & Backup', sub: 'G → S', act: () => onNavigate('settings') }
+          );
         }
-
-        if (hasDue){
-          const overdue = c.due < todayStr() && !isLastCol;
-          const dueSpan = el('span', {
-            className: 'meta-item' + (overdue ? ' overdue' : (isLastCol ? ' done-due' : '')),
-            title: `Prazo: ${c.due.split('-').reverse().join('/')}`,
-            innerHTML: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg><span>${fmtDateShort(c.due)}</span>`
+        boards.filter((b) => !b.archived).forEach((b) => {
+          if (!term || b.name.toLowerCase().includes(term)) {
+            res.push({ id: b.id, title: b.name, sub: `Quadro · ${b.cards.length} cards`, act: () => onOpenBoard(b.id) });
+          }
+          b.cards.forEach((c) => {
+            if (term && (c.title.toLowerCase().includes(term) || c.code.toLowerCase().includes(term))) {
+              res.push({ id: c.id, title: `${c.code} — ${c.title}`, sub: b.name, act: () => onOpenCard(b.id, c.id) });
+            }
           });
-          left.append(dueSpan);
-        }
-
-        if (commentCount > 0){
-          left.append(el('span', {
-            className: 'meta-item',
-            title: `${commentCount} comentário(s)`,
-            innerHTML: `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span>${commentCount}</span>`
-          }));
-        }
-
-        metaRow.append(left);
-
-        if (totalCl > 0){
-          metaRow.append(el('div', { className: 'cl-pill', title: 'Checklist' },
-            renderCircularProgress(doneCl, totalCl),
-            el('span', { textContent: `${doneCl}/${totalCl}` })
-          ));
-        }
-
-        footer.append(metaRow);
-      }
-
-      card.append(footer);
-    }
-
-    card.onclick = () => openCardModal(c.id);
-    card.onkeydown = e => { if (e.key === 'Enter') openCardModal(c.id); };
-    card.oncontextmenu = e => { e.preventDefault(); openContextMenu(e.clientX, e.clientY, c.id); };
-
-    card.ondragstart = e => {
-      e.stopPropagation();
-      dragState = { type: 'CARD', id: c.id, sourceColId: col.id };
-      e.dataTransfer.effectAllowed = 'move';
-      e.dataTransfer.setData('text/plain', c.id);
-      setTimeout(() => card.classList.add('dragging'), 0);
-    };
-    card.ondragend = () => {
-      dragState = null;
-      card.classList.remove('dragging');
-      document.querySelectorAll('.over').forEach(n => n.classList.remove('over'));
-    };
-
-    return card;
-  }
-
-  // Reordenar e mover cartões mantendo índices sequenciais por lista
-  function dropCard(targetCol, listEl, clientY){
-    const found = findCard(dragState.id);
-    if (!found) return;
-
-    const fromCol = found.col;
-    const movedCard = found.card;
-    fromCol.cards.splice(found.idx, 1);
-
-    const visibleNodes = [...listEl.querySelectorAll('.card:not(.dragging)')];
-    const nextNode = visibleNodes.find(n => {
-      const r = n.getBoundingClientRect();
-      return clientY < r.top + r.height / 2;
-    });
-
-    const activeTargetCards = activeCardsInCol(targetCol);
-    let targetActivePos = activeTargetCards.length;
-    if (nextNode){
-      const pos = activeTargetCards.findIndex(c => c.id === nextNode.dataset.id);
-      if (pos > -1) targetActivePos = pos;
-    }
-
-    // Reinsere no array interno mantendo a ordem relativa
-    const deletedCards = targetCol.cards.filter(c => c.deletedAt);
-    activeTargetCards.splice(targetActivePos, 0, movedCard);
-    targetCol.cards = [...activeTargetCards, ...deletedCards];
-
-    if (fromCol.id !== targetCol.id){
-      logActivity(movedCard, 'card.updated.list', `moveu de "${fromCol.title}" para "${targetCol.title}"`);
-    }
-
-    dragState = null;
-    save();
-    render();
-  }
-
-  function dropLane(sourceColId, targetColId){
-    const cols = activeColumns();
-    const deletedCols = state.columns.filter(c => c.deletedAt);
-    const fromIdx = cols.findIndex(c => c.id === sourceColId);
-    const toIdx = cols.findIndex(c => c.id === targetColId);
-    if (fromIdx === -1 || toIdx === -1) return;
-    const [moved] = cols.splice(fromIdx, 1);
-    cols.splice(toIdx, 0, moved);
-    state.columns = [...cols, ...deletedCols];
-    dragState = null;
-    save();
-    render();
-  }
-
-  function addColumn(){
-    const name = prompt('Nome da nova lista:');
-    if (!name || !name.trim()) return;
-    state.columns.push({
-      id: uid(),
-      title: name.trim(),
-      index: activeColumns().length,
-      deletedAt: null,
-      cards: []
-    });
-    save();
-    render();
-  }
-
-  function createNewCardPrompt(colId, position = 'end'){
-    const col = state.columns.find(c => c.id === colId && !c.deletedAt);
-    if (!col) return;
-    const title = prompt(`Novo cartão em "${col.title}":`);
-    if (!title || !title.trim()) return;
-
-    const newCard = {
-      id: uid(),
-      cardNumber: state.nextCardNumber++,
-      title: title.trim(),
-      notes: '',
-      due: '',
-      index: 0,
-      labelIds: [],
-      checklists: [],
-      comments: [],
-      activities: [{ id: uid(), type: 'card.created', text: 'criou este cartão', createdAt: nowIso() }],
-      createdAt: nowIso(),
-      deletedAt: null
-    };
-
-    const actives = activeCardsInCol(col);
-    const deleteds = col.cards.filter(c => c.deletedAt);
-    if (position === 'start') actives.unshift(newCard);
-    else actives.push(newCard);
-    col.cards = [...actives, ...deleteds];
-
-    save();
-    render();
-    openCardModal(newCard.id);
-  }
-
-  // Menu de Contexto (botão direito no cartão)
-  function openContextMenu(x, y, cardId){
-    const menu = $('ctx-menu');
-    menu.replaceChildren(
-      el('button', { type: 'button', className: 'pop-item', textContent: 'Abrir cartão', onclick: () => { closeContextMenu(); openCardModal(cardId); } }),
-      el('button', { type: 'button', className: 'pop-item', textContent: 'Duplicar cartão', onclick: () => { closeContextMenu(); duplicateCard(cardId); } }),
-      el('div', { className: 'pop-sep' }),
-      el('button', { type: 'button', className: 'pop-item danger', textContent: 'Mover para lixeira', onclick: () => { closeContextMenu(); softDeleteCard(cardId); } })
-    );
-    menu.style.left = Math.min(x, window.innerWidth - 210) + 'px';
-    menu.style.top = Math.min(y, window.innerHeight - 140) + 'px';
-    menu.classList.add('open');
-  }
-  function closeContextMenu(){ $('ctx-menu').classList.remove('open'); }
-
-  function duplicateCard(cardId){
-    const f = findCard(cardId);
-    if (!f) return;
-    const copy = JSON.parse(JSON.stringify(f.card));
-    copy.id = uid();
-    copy.cardNumber = state.nextCardNumber++;
-    copy.title = `${f.card.title} (cópia)`;
-    copy.createdAt = nowIso();
-    copy.comments = [];
-    copy.activities = [{ id: uid(), type: 'card.created', text: `duplicou a partir de ${state.cardPrefix}-${f.card.cardNumber}`, createdAt: nowIso() }];
-    copy.checklists.forEach(cl => {
-      cl.id = uid();
-      cl.items.forEach(it => { it.id = uid(); });
-    });
-
-    const actives = activeCardsInCol(f.col);
-    const deleteds = f.col.cards.filter(c => c.deletedAt);
-    const pos = actives.findIndex(c => c.id === cardId);
-    actives.splice(pos + 1, 0, copy);
-    f.col.cards = [...actives, ...deleteds];
-    save();
-    render();
-    toast(`Cartão duplicado (${state.cardPrefix}-${copy.cardNumber})`);
-  }
-
-  function softDeleteCard(cardId){
-    const f = findCard(cardId);
-    if (!f) return;
-    f.card.deletedAt = nowIso();
-    logActivity(f.card, 'card.archived', 'moveu o cartão para a lixeira');
-    if (activeCardId === cardId){
-      activeCardId = null;
-      $('card-dlg').close();
-    }
-    save();
-    render();
-    toast(`Cartão ${state.cardPrefix}-${f.card.cardNumber} movido para a lixeira`);
-  }
-
-  // Modal do Cartão (Kan CardView)
-  function openCardModal(cardId){
-    const f = findCard(cardId);
-    if (!f) return;
-    activeCardId = cardId;
-    renderCardModal();
-    if (!$('card-dlg').open) $('card-dlg').showModal();
-  }
-
-  function renderCardModal(){
-    const f = findCard(activeCardId);
-    if (!f) return;
-    const { col, card } = f;
-
-    $('m-crumb-board').textContent = state.boardName;
-    $('m-crumb-list').textContent = col.title;
-    $('m-crumb-num').textContent = `${state.cardPrefix}-${card.cardNumber}`;
-
-    const titleEl = $('m-title');
-    if (document.activeElement !== titleEl){
-      titleEl.value = card.title;
-      titleEl.style.height = 'auto';
-      titleEl.style.height = titleEl.scrollHeight + 'px';
-    }
-
-    const descEl = $('m-desc');
-    if (document.activeElement !== descEl){
-      descEl.value = card.notes || '';
-    }
-
-    // Lista select
-    const listSel = $('m-list');
-    listSel.replaceChildren(...activeColumns().map(c => el('option', { value: c.id, textContent: c.title })));
-    listSel.value = col.id;
-
-    // Prazo
-    $('m-due').value = card.due || '';
-
-    // Posição & Criado em
-    $('m-pos-info').textContent = `#${card.index + 1} de ${activeCardsInCol(col).length}`;
-    $('m-created-info').textContent = new Date(card.createdAt).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' });
-
-    // Etiquetas selecionadas na lateral
-    const labelsView = $('m-labels-view');
-    labelsView.replaceChildren();
-    const cardLabels = card.labelIds.map(id => state.labels.find(l => l.id === id)).filter(Boolean);
-    if (!cardLabels.length){
-      labelsView.append(el('span', { style: { fontSize: '.78rem', color: 'var(--mute)' }, textContent: 'Nenhuma etiqueta' }));
-    } else {
-      cardLabels.forEach(lbl => {
-        labelsView.append(el('button', {
-          type: 'button',
-          className: 'label-chip-btn',
-          title: 'Clique para remover',
-          onclick: () => toggleCardLabel(card.id, lbl.id)
-        },
-          el('span', { className: 'badge-dot', style: { backgroundColor: lbl.colourCode } }),
-          el('span', { textContent: lbl.name }),
-          el('span', { style: { color: 'var(--mute)', marginLeft: '2px' }, textContent: '×' })
-        ));
-      });
-    }
-
-    renderCardChecklists(card);
-    renderCardFeed(card);
-  }
-
-  function toggleCardLabel(cardId, labelId){
-    const f = findCard(cardId);
-    if (!f) return;
-    const lbl = state.labels.find(l => l.id === labelId);
-    const idx = f.card.labelIds.indexOf(labelId);
-    if (idx > -1){
-      f.card.labelIds.splice(idx, 1);
-      if (lbl) logActivity(f.card, 'card.updated.label.removed', `removeu a etiqueta "${lbl.name}"`);
-    } else {
-      f.card.labelIds.push(labelId);
-      if (lbl) logActivity(f.card, 'card.updated.label.added', `adicionou a etiqueta "${lbl.name}"`);
-    }
-    save();
-    render();
-    if ($('m-label-pop').classList.contains('open')) renderLabelPickerPopover(f.card);
-  }
-
-  function renderLabelPickerPopover(card){
-    const pop = $('m-label-pop');
-    pop.replaceChildren();
-    if (!state.labels.length){
-      pop.append(el('div', { className: 'empty-lane', textContent: 'Nenhuma etiqueta criada' }));
-    } else {
-      state.labels.forEach(lbl => {
-        const checked = card.labelIds.includes(lbl.id);
-        pop.append(el('button', {
-          type: 'button',
-          className: 'pop-item',
-          onclick: e => { e.stopPropagation(); toggleCardLabel(card.id, lbl.id); }
-        },
-          el('input', { type: 'checkbox', checked }),
-          el('span', { className: 'badge-dot', style: { backgroundColor: lbl.colourCode } }),
-          el('span', { textContent: lbl.name, style: { flex: 1 } })
-        ));
-      });
-    }
-    pop.append(
-      el('div', { className: 'pop-sep' }),
-      el('button', {
-        type: 'button',
-        className: 'pop-item',
-        textContent: '+ Criar nova etiqueta...',
-        onclick: () => { closeAllPopovers(); openLabelsManager(); }
-      })
-    );
-  }
-
-  function renderCardChecklists(card){
-    const wrap = $('m-checklists');
-    wrap.replaceChildren();
-    if (!card.checklists.length){
-      wrap.append(el('div', { style: { fontSize: '.8rem', color: 'var(--mute)' }, textContent: 'Nenhuma checklist neste cartão.' }));
-      return;
-    }
-
-    card.checklists.forEach((cl, clIdx) => {
-      const done = cl.items.filter(i => i.completed).length;
-      const total = cl.items.length;
-
-      const block = el('div', { className: 'checklist-block' });
-      const top = el('div', { className: 'checklist-top' });
-
-      const nameInp = el('input', {
-        className: 'checklist-name',
-        value: cl.name,
-        onchange: () => {
-          const val = nameInp.value.trim();
-          if (val && val !== cl.name){
-            cl.name = val;
-            logActivity(card, 'card.updated.checklist.renamed', `renomeou checklist para "${val}"`);
-            save();
-            render();
-          } else nameInp.value = cl.name;
-        }
-      });
-
-      const pill = el('div', { className: 'cl-pill', style: { marginLeft: 0 } },
-        renderCircularProgress(done, total),
-        el('span', { textContent: `${done}/${total}` })
-      );
-
-      const delClBtn = el('button', {
-        type: 'button',
-        className: 'btn sm ghost danger',
-        title: 'Excluir checklist',
-        textContent: '✕',
-        onclick: () => {
-          card.checklists.splice(clIdx, 1);
-          logActivity(card, 'card.updated.checklist.deleted', `excluiu a checklist "${cl.name}"`);
-          save();
-          render();
-        }
-      });
-
-      top.append(nameInp, pill, delClBtn);
-      block.append(top);
-
-      const itemsList = el('div', { className: 'cl-items' });
-      cl.items.forEach((item, itemIdx) => {
-        const row = el('div', { className: 'cl-item' });
-        const cb = el('input', {
-          type: 'checkbox',
-          checked: item.completed,
-          onchange: () => {
-            item.completed = cb.checked;
-            logActivity(
-              card,
-              item.completed ? 'card.updated.checklist.item.completed' : 'card.updated.checklist.item.uncompleted',
-              `${item.completed ? 'concluiu' : 'reabriu'} "${item.title}"`
-            );
-            save();
-            render();
-          }
         });
+        return res.slice(0, 10);
+      }, [q, boards]);
 
-        const txt = el('input', {
-          className: 'cl-item-text' + (item.completed ? ' done' : ''),
-          value: item.title,
-          onchange: () => {
-            const val = txt.value.trim();
-            if (val && val !== item.title){
-              item.title = val;
-              save();
-              render();
-            } else txt.value = item.title;
-          }
-        });
-
-        const delIt = el('button', {
-          type: 'button',
-          className: 'cl-item-del',
-          textContent: '✕',
-          title: 'Remover item',
-          onclick: () => {
-            cl.items.splice(itemIdx, 1);
-            logActivity(card, 'card.updated.checklist.item.deleted', `removeu o item "${item.title}"`);
-            save();
-            render();
-          }
-        });
-
-        row.append(cb, txt, delIt);
-        itemsList.append(row);
-      });
-      block.append(itemsList);
-
-      const addInput = el('input', { placeholder: 'Adicionar item...' });
-      const addItemFn = () => {
-        const val = addInput.value.trim();
-        if (!val) return;
-        cl.items.push({ id: uid(), title: val, completed: false, index: cl.items.length });
-        logActivity(card, 'card.updated.checklist.item.added', `adicionou "${val}" em "${cl.name}"`);
-        addInput.value = '';
-        save();
-        render();
-      };
-      addInput.onkeydown = e => { if (e.key === 'Enter'){ e.preventDefault(); addItemFn(); } };
-
-      block.append(el('div', { className: 'cl-add-row' },
-        addInput,
-        el('button', { type: 'button', className: 'btn sm', textContent: 'Adicionar', onclick: addItemFn })
-      ));
-
-      wrap.append(block);
-    });
-  }
-
-  function renderCardFeed(card){
-    $('m-sort-act').textContent = activityOrder === 'newest' ? 'Mais recentes primeiro' : 'Mais antigos primeiro';
-    const feed = $('m-feed');
-    feed.replaceChildren();
-
-    const merged = [
-      ...(card.comments || []).map(c => ({ kind: 'comment', data: c, createdAt: c.createdAt })),
-      ...(card.activities || []).map(a => ({ kind: 'activity', data: a, createdAt: a.createdAt }))
-    ];
-
-    merged.sort((a, b) => {
-      const diff = new Date(a.createdAt) - new Date(b.createdAt);
-      return activityOrder === 'newest' ? -diff : diff;
-    });
-
-    merged.forEach(entry => {
-      if (entry.kind === 'comment'){
-        const cm = entry.data;
-        const cCard = el('div', { className: 'comment-card' });
-        const head = el('div', { className: 'comment-head' },
-          el('div', {},
-            el('span', { className: 'comment-author', textContent: 'Você ' }),
-            el('span', { textContent: `· ${fmtRelTime(cm.createdAt)}${cm.updatedAt ? ' (editado)' : ''}` })
-          ),
-          el('div', { style: { display: 'flex', gap: '4px' } },
-            el('button', {
-              type: 'button', className: 'btn sm ghost', textContent: 'Editar',
-              onclick: () => {
-                const edited = prompt('Editar comentário:', cm.text);
-                if (edited !== null && edited.trim() && edited.trim() !== cm.text){
-                  cm.text = edited.trim();
-                  cm.updatedAt = nowIso();
-                  save();
-                  render();
-                }
-              }
-            }),
-            el('button', {
-              type: 'button', className: 'btn sm ghost danger', textContent: 'Excluir',
-              onclick: () => {
-                card.comments = card.comments.filter(x => x.id !== cm.id);
-                logActivity(card, 'card.updated.comment.deleted', 'excluiu um comentário');
-                save();
-                render();
-              }
-            })
-          )
-        );
-        cCard.append(head, el('div', { className: 'comment-body', textContent: cm.text }));
-        feed.append(cCard);
-      } else {
-        const act = entry.data;
-        feed.append(el('div', { className: 'act-row' },
-          el('div', { className: 'act-dot', innerHTML: '<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="4"/></svg>' }),
-          el('div', { className: 'act-text' },
-            el('strong', { textContent: 'Você ' }),
-            el('span', { textContent: `${act.text} · ${fmtRelTime(act.createdAt)}` })
-          )
-        ));
-      }
-    });
-  }
-
-  // Eventos do Modal do Cartão
-  $('m-close-btn').onclick = () => { activeCardId = null; $('card-dlg').close(); };
-  $('card-dlg').addEventListener('close', () => { activeCardId = null; });
-
-  $('m-title').addEventListener('input', e => {
-    e.target.style.height = 'auto';
-    e.target.style.height = e.target.scrollHeight + 'px';
-  });
-  $('m-title').addEventListener('blur', () => {
-    const f = findCard(activeCardId);
-    if (!f) return;
-    const val = $('m-title').value.trim();
-    if (val && val !== f.card.title){
-      f.card.title = val;
-      logActivity(f.card, 'card.updated.title', `alterou o título para "${val}"`);
-      save();
-      render();
-    } else {
-      $('m-title').value = f.card.title;
-    }
-  });
-  $('m-title').addEventListener('keydown', e => {
-    if (e.key === 'Enter'){ e.preventDefault(); $('m-title').blur(); }
-  });
-
-  $('m-desc').addEventListener('blur', () => {
-    const f = findCard(activeCardId);
-    if (!f) return;
-    const val = $('m-desc').value;
-    if (val !== (f.card.notes || '')){
-      f.card.notes = val;
-      logActivity(f.card, 'card.updated.description', 'atualizou a descrição');
-      save();
-      render();
-    }
-  });
-
-  $('m-list').addEventListener('change', () => {
-    const f = findCard(activeCardId);
-    if (!f) return;
-    const targetCol = state.columns.find(c => c.id === $('m-list').value && !c.deletedAt);
-    if (!targetCol || targetCol.id === f.col.id) return;
-    const fromTitle = f.col.title;
-    f.col.cards.splice(f.idx, 1);
-    const actives = activeCardsInCol(targetCol);
-    const deleteds = targetCol.cards.filter(c => c.deletedAt);
-    actives.push(f.card);
-    targetCol.cards = [...actives, ...deleteds];
-    logActivity(f.card, 'card.updated.list', `moveu de "${fromTitle}" para "${targetCol.title}"`);
-    save();
-    render();
-  });
-
-  $('m-due').addEventListener('change', () => {
-    const f = findCard(activeCardId);
-    if (!f) return;
-    const val = $('m-due').value;
-    if (val !== (f.card.due || '')){
-      f.card.due = val;
-      logActivity(f.card, val ? 'card.updated.dueDate.updated' : 'card.updated.dueDate.removed',
-        val ? `definiu o prazo para ${val.split('-').reverse().join('/')}` : 'removeu o prazo');
-      save();
-      render();
-    }
-  });
-
-  $('m-due-clear').onclick = () => {
-    const f = findCard(activeCardId);
-    if (!f || !f.card.due) return;
-    f.card.due = '';
-    logActivity(f.card, 'card.updated.dueDate.removed', 'removeu o prazo');
-    save();
-    render();
-  };
-
-  $('m-add-cl').onclick = () => {
-    const f = findCard(activeCardId);
-    if (!f) return;
-    const name = prompt('Nome da checklist:', 'Checklist');
-    if (!name || !name.trim()) return;
-    f.card.checklists.push({ id: uid(), name: name.trim(), index: f.card.checklists.length, items: [] });
-    logActivity(f.card, 'card.updated.checklist.added', `adicionou a checklist "${name.trim()}"`);
-    save();
-    render();
-  };
-
-  $('m-label-picker-btn').onclick = e => {
-    e.stopPropagation();
-    const f = findCard(activeCardId);
-    if (!f) return;
-    const pop = $('m-label-pop');
-    const wasOpen = pop.classList.contains('open');
-    closeAllPopovers();
-    if (!wasOpen){
-      renderLabelPickerPopover(f.card);
-      pop.classList.add('open');
-    }
-  };
-
-  function submitComment(){
-    const f = findCard(activeCardId);
-    if (!f) return;
-    const inp = $('m-comment-input');
-    const text = inp.value.trim();
-    if (!text) return;
-    f.card.comments.push({ id: uid(), text, createdAt: nowIso(), updatedAt: null });
-    inp.value = '';
-    save();
-    render();
-  }
-  $('m-comment-submit').onclick = submitComment;
-  $('m-comment-input').onkeydown = e => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'Enter'){ e.preventDefault(); submitComment(); }
-  };
-
-  $('m-sort-act').onclick = () => {
-    activityOrder = activityOrder === 'newest' ? 'oldest' : 'newest';
-    renderCardModal();
-  };
-
-  $('m-dup-btn').onclick = () => { if (activeCardId) duplicateCard(activeCardId); };
-  $('m-del-btn').onclick = () => { if (activeCardId) softDeleteCard(activeCardId); };
-
-  // Gerenciador de Etiquetas
-  function openLabelsManager(){
-    renderLabelsManager();
-    $('labels-dlg').showModal();
-  }
-
-  function renderLabelsManager(){
-    const swatches = $('new-label-swatches');
-    swatches.replaceChildren(...KAN_COLOURS.map(c => el('button', {
-      type: 'button',
-      className: 'swatch' + (selectedNewLabelColor === c.code ? ' active' : ''),
-      style: { backgroundColor: c.code },
-      title: c.name,
-      onclick: () => { selectedNewLabelColor = c.code; renderLabelsManager(); }
-    })));
-
-    const list = $('labels-manage-list');
-    list.replaceChildren();
-    if (!state.labels.length){
-      list.append(el('div', { className: 'empty-lane', textContent: 'Nenhuma etiqueta cadastrada.' }));
-      return;
-    }
-
-    state.labels.forEach((lbl, idx) => {
-      const nameInp = el('input', {
-        value: lbl.name,
-        style: { flex: 1, background: 'transparent', border: '1px solid transparent', borderRadius: '4px', padding: '3px 6px', fontSize: '.84rem' },
-        onchange: () => {
-          const val = nameInp.value.trim();
-          if (val){ lbl.name = val; save(); render(); }
-          else nameInp.value = lbl.name;
-        }
-      });
-      nameInp.onfocus = () => { nameInp.style.borderColor = 'var(--line-strong)'; nameInp.style.background = 'var(--bg)'; };
-      nameInp.onblur = () => { nameInp.style.borderColor = 'transparent'; nameInp.style.background = 'transparent'; };
-
-      const colorCycleBtn = el('button', {
-        type: 'button',
-        className: 'swatch',
-        style: { width: '18px', height: '18px', backgroundColor: lbl.colourCode, flexShrink: 0 },
-        title: 'Clique para alternar cor',
-        onclick: () => {
-          const cur = KAN_COLOURS.findIndex(c => c.code === lbl.colourCode);
-          lbl.colourCode = KAN_COLOURS[(cur + 1) % KAN_COLOURS.length].code;
-          save();
-          renderLabelsManager();
-          render();
-        }
-      });
-
-      const delBtn = el('button', {
-        type: 'button',
-        className: 'btn sm ghost danger',
-        textContent: 'Excluir',
-        onclick: () => {
-          state.labels.splice(idx, 1);
-          state.columns.forEach(col => col.cards.forEach(c => {
-            c.labelIds = c.labelIds.filter(id => id !== lbl.id);
-          }));
-          save();
-          renderLabelsManager();
-          render();
-        }
-      });
-
-      list.append(el('div', { className: 'label-manage-row' }, colorCycleBtn, nameInp, delBtn));
-    });
-  }
-
-  $('labels-btn').onclick = openLabelsManager;
-  $('new-label-form').onsubmit = e => {
-    e.preventDefault();
-    const inp = $('new-label-name');
-    const name = inp.value.trim();
-    if (!name) return;
-    state.labels.push({ id: uid(), name, colourCode: selectedNewLabelColor });
-    inp.value = '';
-    save();
-    renderLabelsManager();
-    render();
-  };
-
-  // Lixeira (Soft Delete)
-  function openTrashModal(){
-    renderTrashModal();
-    $('trash-dlg').showModal();
-  }
-
-  function renderTrashModal(){
-    const list = $('trash-list');
-    list.replaceChildren();
-
-    const deletedCols = state.columns.filter(c => c.deletedAt);
-    const deletedCards = [];
-    state.columns.forEach(col => {
-      if (!col.deletedAt){
-        col.cards.forEach(c => { if (c.deletedAt) deletedCards.push({ col, card: c }); });
-      }
-    });
-
-    if (!deletedCols.length && !deletedCards.length){
-      list.append(el('div', { className: 'empty-lane', textContent: 'A lixeira está vazia.' }));
-      return;
-    }
-
-    if (deletedCols.length){
-      list.append(el('div', { className: 'pop-title', textContent: 'Listas excluídas' }));
-      deletedCols.forEach(col => {
-        list.append(el('div', { className: 'trash-row' },
-          el('div', {},
-            el('div', { style: { fontWeight: 600 }, textContent: col.title }),
-            el('div', { style: { fontSize: '.75rem', color: 'var(--mute)' }, textContent: `${col.cards.length} cartão(ões) · excluída ${fmtRelTime(col.deletedAt)}` })
-          ),
-          el('div', { style: { display: 'flex', gap: '6px' } },
-            el('button', {
-              type: 'button', className: 'btn sm', textContent: 'Restaurar',
-              onclick: () => {
-                col.deletedAt = null;
-                col.cards.forEach(c => { c.deletedAt = null; });
-                save(); renderTrashModal(); render();
-                toast(`Lista "${col.title}" restaurada`);
-              }
-            }),
-            el('button', {
-              type: 'button', className: 'btn sm danger', textContent: 'Apagar',
-              onclick: () => {
-                state.columns = state.columns.filter(c => c.id !== col.id);
-                save(); renderTrashModal(); render();
-              }
-            })
-          )
-        ));
-      });
-    }
-
-    if (deletedCards.length){
-      list.append(el('div', { className: 'pop-title', textContent: 'Cartões excluídos' }));
-      deletedCards.forEach(({ col, card }) => {
-        list.append(el('div', { className: 'trash-row' },
-          el('div', { style: { minWidth: 0 } },
-            el('div', { style: { fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }, textContent: `${state.cardPrefix}-${card.cardNumber} · ${card.title}` }),
-            el('div', { style: { fontSize: '.75rem', color: 'var(--mute)' }, textContent: `Lista: ${col.title} · ${fmtRelTime(card.deletedAt)}` })
-          ),
-          el('div', { style: { display: 'flex', gap: '6px', flexShrink: 0 } },
-            el('button', {
-              type: 'button', className: 'btn sm', textContent: 'Restaurar',
-              onclick: () => {
-                card.deletedAt = null;
-                logActivity(card, 'card.restored', 'restaurou o cartão da lixeira');
-                save(); renderTrashModal(); render();
-                toast(`Cartão ${state.cardPrefix}-${card.cardNumber} restaurado`);
-              }
-            }),
-            el('button', {
-              type: 'button', className: 'btn sm danger', textContent: 'Apagar',
-              onclick: () => {
-                col.cards = col.cards.filter(c => c.id !== card.id);
-                save(); renderTrashModal(); render();
-              }
-            })
-          )
-        ));
-      });
-    }
-  }
-
-  $('trash-btn').onclick = openTrashModal;
-  $('empty-trash-btn').onclick = () => {
-    if (!confirm('Apagar definitivamente todos os itens da lixeira?')) return;
-    state.columns = state.columns.filter(c => !c.deletedAt);
-    state.columns.forEach(col => {
-      col.cards = col.cards.filter(c => !c.deletedAt);
-    });
-    save();
-    renderTrashModal();
-    render();
-    toast('Lixeira esvaziada');
-  };
-
-  // Popover de Filtros (Kan style)
-  function renderFilterPopover(){
-    const pop = $('filter-pop');
-    pop.replaceChildren();
-
-    pop.append(el('div', { className: 'pop-title', textContent: 'Etiquetas' }));
-    if (!state.labels.length){
-      pop.append(el('div', { style: { padding: '4px 8px', fontSize: '.78rem', color: 'var(--mute)' }, textContent: 'Sem etiquetas' }));
-    } else {
-      state.labels.forEach(lbl => {
-        const active = filters.labels.includes(lbl.id);
-        pop.append(el('button', {
-          type: 'button', className: 'pop-item',
-          onclick: e => {
-            e.stopPropagation();
-            if (active) filters.labels = filters.labels.filter(id => id !== lbl.id);
-            else filters.labels.push(lbl.id);
-            renderFilterPopover();
-            render();
-          }
-        },
-          el('input', { type: 'checkbox', checked: active }),
-          el('span', { className: 'badge-dot', style: { backgroundColor: lbl.colourCode } }),
-          el('span', { textContent: lbl.name })
-        ));
-      });
-    }
-
-    pop.append(el('div', { className: 'pop-sep' }), el('div', { className: 'pop-title', textContent: 'Prazo' }));
-    const dueOpts = [
-      { key: 'overdue', label: 'Atrasados' },
-      { key: 'today', label: 'Vence hoje' },
-      { key: 'upcoming', label: 'Próximos dias' },
-      { key: 'none', label: 'Sem prazo' }
-    ];
-    dueOpts.forEach(opt => {
-      const active = filters.due.includes(opt.key);
-      pop.append(el('button', {
-        type: 'button', className: 'pop-item',
-        onclick: e => {
-          e.stopPropagation();
-          if (active) filters.due = filters.due.filter(k => k !== opt.key);
-          else filters.due.push(opt.key);
-          renderFilterPopover();
-          render();
-        }
-      },
-        el('input', { type: 'checkbox', checked: active }),
-        el('span', { textContent: opt.label })
-      ));
-    });
-
-    if (filters.labels.length || filters.due.length){
-      pop.append(
-        el('div', { className: 'pop-sep' }),
-        el('button', {
-          type: 'button', className: 'pop-item danger', textContent: 'Limpar filtros',
-          onclick: () => { filters = { labels: [], due: [] }; renderFilterPopover(); render(); }
-        })
+      return (
+        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/50 p-4 pt-[18vh] backdrop-blur-[2px]" onClick={onClose}>
+          <div className="w-full max-w-[540px] divide-y divide-light-400 overflow-hidden rounded-lg border border-light-600 bg-white/95 shadow-3xl-light dark:divide-white/10 dark:border-dark-600 dark:bg-dark-100/95 dark:shadow-3xl-dark" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center px-4">
+              <Icon name="search" className="h-4 w-4 text-light-800 dark:text-dark-800" />
+              <input
+                autoFocus
+                value={q}
+                onChange={(e) => setQ(e.target.value)}
+                onKeyDown={(e) => { if (e.key === 'Enter' && items[0]) { items[0].act(); onClose(); } }}
+                placeholder="Buscar quadros, cards ou comandos..."
+                className="h-12 w-full bg-transparent px-3 text-sm focus:outline-none"
+              />
+            </div>
+            <div className="max-h-72 overflow-y-auto p-1.5">
+              {items.map((it) => (
+                <button
+                  key={it.id}
+                  onClick={() => { it.act(); onClose(); }}
+                  className="flex w-full items-center justify-between rounded-md px-3 py-2 text-left text-sm hover:bg-light-200 dark:hover:bg-dark-200"
+                >
+                  <span className="truncate font-medium">{it.title}</span>
+                  <span className="ml-2 shrink-0 text-xs text-light-800 dark:text-dark-800">{it.sub}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
       );
     }
-  }
 
-  $('filter-btn').onclick = e => {
-    e.stopPropagation();
-    const pop = $('filter-pop');
-    const wasOpen = pop.classList.contains('open');
-    closeAllPopovers();
-    if (!wasOpen){
-      renderFilterPopover();
-      pop.classList.add('open');
+    // --- SHORTCUTS MODAL ---
+    function ShortcutsModal({ onClose }) {
+      const list = [
+        { k: 'Ctrl + K', d: 'Busca rápida (Command Palette)' },
+        { k: 'C', d: 'Criar novo quadro' },
+        { k: 'G → B', d: 'Ir para Quadros' },
+        { k: 'G → T', d: 'Ir para Templates' },
+        { k: 'G → R', d: 'Ir para Roteiros & Links' },
+        { k: 'G → S', d: 'Ir para Configurações' },
+        { k: 'Esc', d: 'Fechar modal' },
+      ];
+      return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-[2px]" onClick={onClose}>
+          <div className="w-full max-w-sm rounded-xl border border-light-500 bg-light-50 p-5 shadow-3xl-light dark:border-dark-500 dark:bg-dark-100 dark:shadow-3xl-dark" onClick={(e) => e.stopPropagation()}>
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-sm font-bold">Atalhos de Teclado</h2>
+              <button onClick={onClose}><Icon name="x" /></button>
+            </div>
+            <div className="space-y-2">
+              {list.map((i) => (
+                <div key={i.k} className="flex items-center justify-between text-xs">
+                  <span className="text-light-900 dark:text-dark-900">{i.d}</span>
+                  <kbd className="rounded border border-light-500 bg-light-200 px-1.5 py-0.5 font-mono font-semibold dark:border-dark-500 dark:bg-dark-300">{i.k}</kbd>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      );
     }
-  };
 
-  $('more-btn').onclick = e => {
-    e.stopPropagation();
-    const pop = $('more-pop');
-    const wasOpen = pop.classList.contains('open');
-    closeAllPopovers();
-    if (!wasOpen) pop.classList.add('open');
-  };
-
-  function closeAllPopovers(){
-    document.querySelectorAll('.popover.open').forEach(p => p.classList.remove('open'));
-    closeContextMenu();
-  }
-  document.addEventListener('click', closeAllPopovers);
-
-  // Título e prefixo do quadro
-  $('board-title').onchange = () => {
-    const val = $('board-title').value.trim();
-    if (val){ state.boardName = val; save(); render(); }
-    else $('board-title').value = state.boardName;
-  };
-  $('prefix-btn').onclick = () => {
-    const p = prompt('Prefixo dos cartões (ex: KAN, TASK, PROJ):', state.cardPrefix);
-    if (p && p.trim()){
-      state.cardPrefix = p.trim().toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6) || 'KAN';
-      save();
-      render();
-    }
-  };
-
-  // Busca
-  $('search').oninput = e => { query = e.target.value; render(); };
-
-  // Tema claro/escuro
-  const root = document.documentElement;
-  const savedTheme = localStorage.getItem('kanban:theme');
-  if (savedTheme) root.dataset.theme = savedTheme;
-  $('theme').onclick = () => {
-    const isDark = root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
-    root.dataset.theme = isDark ? 'light' : 'dark';
-    try { localStorage.setItem('kanban:theme', root.dataset.theme); } catch(e){}
-  };
-
-  // Exportar / Importar / Restaurar
-  $('export').onclick = () => {
-    const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
-    const a = el('a', { href: URL.createObjectURL(blob), download: 'kanban-' + todayStr() + '.json' });
-    a.click();
-    URL.revokeObjectURL(a.href);
-  };
-  $('import').onclick = () => $('file').click();
-  $('file').onchange = async e => {
-    const f = e.target.files[0];
-    e.target.value = '';
-    if (!f) return;
-    try {
-      const parsed = JSON.parse(await f.text());
-      if (!Array.isArray(parsed.columns)) throw new Error();
-      if (!confirm('Importar substitui o quadro atual. Continuar?')) return;
-      state = migrateState(parsed);
-      save();
-      render();
-      toast('Quadro importado com sucesso');
-    } catch(err){
-      alert('Arquivo inválido. Use um JSON exportado por este Kanban.');
-    }
-  };
-  $('reset-demo').onclick = () => {
-    if (!confirm('Substituir o quadro atual pelo quadro de exemplo?')) return;
-    state = defaultState();
-    save();
-    render();
-  };
-
-  save();
-  render();
-})();
-</script>
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
 </body>
 </html>
