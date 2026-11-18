@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kanban</title>
+<style>
+:root{
+  --bg:#eef1f4; --lane:#e1e6ec; --card:#ffffff; --ink:#1c2430; --mute:#5d6b7c;
+  --line:#c9d1db; --accent:#2f5d8a; --accent-ink:#fff; --danger:#b3412f;
+  --p-alta:#c4492f; --p-media:#c28a1e; --p-baixa:#3f8a62;
+  color-scheme:light;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#12171d; --lane:#1b222b; --card:#242d38; --ink:#e6ebf1; --mute:#93a1b2;
+    --line:#35414f; --accent:#6fa3d6; --accent-ink:#0f1820; --danger:#e0806d;
+    --p-alta:#e0806d; --p-media:#d9aa4e; --p-baixa:#6bbf93; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#12171d; --lane:#1b222b; --card:#242d38; --ink:#e6ebf1; --mute:#93a1b2;
+  --line:#35414f; --accent:#6fa3d6; --accent-ink:#0f1820; --danger:#e0806d;
+  --p-alta:#e0806d; --p-media:#d9aa4e; --p-baixa:#6bbf93; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;flex-direction:column}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+header{display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+header h1{font-size:1.25rem;margin:0;font-weight:700;letter-spacing:-.01em;margin-right:auto}
+.btn{background:transparent;border:1px solid var(--line);border-radius:6px;padding:6px 12px}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+.btn.danger{color:var(--danger)}
+#search{border:1px solid var(--line);background:var(--card);border-radius:6px;padding:6px 10px;width:200px;max-width:100%}
+
+main{flex:1;display:flex;gap:14px;padding:18px 20px;overflow-x:auto;align-items:flex-start}
+.lane{flex:0 0 290px;max-height:100%;display:flex;flex-direction:column;background:var(--lane);border-radius:10px}
+.lane-head{display:flex;align-items:center;gap:6px;padding:10px 10px 6px 14px}
+.lane-title{flex:1;font-weight:700;background:transparent;border:1px solid transparent;border-radius:4px;padding:2px 4px;min-width:0}
+.lane-title:hover,.lane-title:focus{border-color:var(--line);background:var(--card)}
+.count{color:var(--mute);font-size:.85rem}
+.icon{background:none;border:none;color:var(--mute);padding:2px 6px;border-radius:4px;font-size:1rem}
+.icon:hover{color:var(--danger)}
+.cards{flex:1;overflow-y:auto;padding:4px 10px 10px;display:flex;flex-direction:column;gap:8px;min-height:44px}
+.lane.over .cards{outline:2px dashed var(--accent);outline-offset:-4px;border-radius:8px}
+.card{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--line);border-radius:6px;padding:9px 11px;cursor:grab;word-break:break-word}
+.card[data-prio="alta"]{border-left-color:var(--p-alta)}
+.card[data-prio="media"]{border-left-color:var(--p-media)}
+.card[data-prio="baixa"]{border-left-color:var(--p-baixa)}
+.card.dragging{opacity:.4}
+.card:hover{border-color:var(--accent)}
+.card .t{font-weight:600}
+.card .n{color:var(--mute);font-size:.88rem;margin-top:2px;white-space:pre-wrap;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.card .d{font-size:.8rem;color:var(--mute);margin-top:6px}
+.card .d.late{color:var(--danger);font-weight:600}
+.add{margin:0 10px 10px;background:transparent;border:1px dashed var(--line);border-radius:6px;padding:7px;color:var(--mute)}
+.add:hover{color:var(--accent);border-color:var(--accent)}
+.new-lane{flex:0 0 220px;border:1px dashed var(--line);background:transparent;border-radius:10px;padding:12px;color:var(--mute)}
+.new-lane:hover{color:var(--accent);border-color:var(--accent)}
+
+dialog{border:1px solid var(--line);border-radius:10px;background:var(--card);color:var(--ink);padding:0;width:min(440px,92vw)}
+dialog::backdrop{background:rgba(10,15,20,.55)}
+form{display:flex;flex-direction:column;gap:12px;padding:18px}
+label{display:flex;flex-direction:column;gap:4px;font-size:.88rem;color:var(--mute)}
+label input,label textarea,label select{background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:7px 9px;color:var(--ink)}
+textarea{min-height:90px;resize:vertical}
+.row{display:flex;gap:10px}.row>*{flex:1}
+.actions{display:flex;gap:8px;justify-content:flex-end;margin-top:4px}
+.actions .danger{margin-right:auto}
+.empty{color:var(--mute);text-align:center;padding:8px;font-size:.88rem}
+@media (max-width:600px){.lane{flex-basis:84vw}}
+@media (prefers-reduced-motion:no-preference){.card{transition:border-color .15s}}
+</style>
+</head>
+<body>
+<header>
+  <h1>Meu Kanban</h1>
+  <input id="search" type="search" placeholder="Buscar cartões" aria-label="Buscar cartões">
+  <button class="btn" id="theme" title="Alternar tema">Tema</button>
+  <button class="btn" id="export">Exportar</button>
+  <button class="btn" id="import">Importar</button>
+  <input type="file" id="file" accept="application/json" hidden>
+</header>
+
+<main id="board"></main>
+
+<dialog id="dlg">
+  <form method="dialog" id="form">
+    <label>Título <input id="f-title" required maxlength="120"></label>
+    <label>Notas <textarea id="f-notes"></textarea></label>
+    <div class="row">
+      <label>Prioridade
+        <select id="f-prio">
+          <option value="">Nenhuma</option>
+          <option value="alta">Alta</option>
+          <option value="media">Média</option>
+          <option value="baixa">Baixa</option>
+        </select>
+      </label>
+      <label>Prazo <input type="date" id="f-due"></label>
+    </div>
+    <label>Coluna <select id="f-col"></select></label>
+    <div class="actions">
+      <button type="button" class="btn danger" id="f-del">Excluir cartão</button>
+      <button type="button" class="btn" id="f-cancel">Cancelar</button>
+      <button type="submit" class="btn primary">Salvar cartão</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+(function(){
+  const KEY = 'kanban:v1';
+  const uid = () => Math.random().toString(36).slice(2, 10);
+  const defaults = () => ({columns:[
+    {id:uid(), title:'A fazer', cards:[]},
+    {id:uid(), title:'Em andamento', cards:[]},
+    {id:uid(), title:'Concluído', cards:[]}
+  ]});
+
+  let state;
+  try { state = JSON.parse(localStorage.getItem(KEY)) || defaults(); } catch(e){ state = defaults(); }
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e){} };
+
+  const board = document.getElementById('board');
+  const dlg = document.getElementById('dlg');
+  const $ = id => document.getElementById(id);
+  let query = '';
+  let editing = null; // {colId, cardId|null}
+  let dragId = null;
+
+  function el(tag, props, ...kids){
+    const n = document.createElement(tag);
+    Object.assign(n, props || {});
+    kids.forEach(k => n.append(k));
+    return n;
+  }
+  const fmtDate = s => { const [y,m,d] = s.split('-'); return `${d}/${m}/${y}`; };
+  const isLate = s => s < new Date().toISOString().slice(0,10);
+
+  function render(){
+    board.replaceChildren();
+    state.columns.forEach(col => board.append(renderLane(col)));
+    board.append(el('button', {className:'new-lane', textContent:'+ Nova coluna', onclick:addColumn}));
+  }
+
+  function renderLane(col){
+    const q = query.trim().toLowerCase();
+    const shown = col.cards.filter(c => !q || (c.title + ' ' + c.notes).toLowerCase().includes(q));
+    const lane = el('section', {className:'lane'});
+    lane.dataset.col = col.id;
+
+    const title = el('input', {className:'lane-title', value:col.title, ariaLabel:'Nome da coluna'});
+    title.onchange = () => { col.title = title.value.trim() || 'Sem nome'; save(); };
+    const del = el('button', {className:'icon', title:'Excluir coluna', textContent:'✕'});
+    del.onclick = () => {
+      if (confirm(`Excluir a coluna "${col.title}" e seus ${col.cards.length} cartões?`)) {
+        state.columns = state.columns.filter(c => c !== col); save(); render();
+      }
+    };
+    lane.append(el('div', {className:'lane-head'}, title, el('span', {className:'count', textContent:shown.length}), del));
+
+    const list = el('div', {className:'cards'});
+    shown.forEach(c => list.append(renderCard(c, col)));
+    if (!shown.length) list.append(el('div', {className:'empty', textContent: q ? 'Nada encontrado' : 'Arraste cartões para cá'}));
+    lane.append(list);
+
+    lane.append(el('button', {className:'add', textContent:'+ Adicionar cartão', onclick:() => openDialog(col.id, null)}));
+
+    lane.addEventListener('dragover', e => {
+      if (!dragId) return;
+      e.preventDefault();
+      lane.classList.add('over');
+    });
+    lane.addEventListener('dragleave', e => { if (!lane.contains(e.relatedTarget)) lane.classList.remove('over'); });
+    lane.addEventListener('drop', e => {
+      e.preventDefault();
+      lane.classList.remove('over');
+      dropCard(col, list, e.clientY);
+    });
+    return lane;
+  }
+
+  function renderCard(c, col){
+    const card = el('div', {className:'card', draggable:true, tabIndex:0});
+    card.dataset.id = c.id;
+    if (c.prio) card.dataset.prio = c.prio;
+    card.append(el('div', {className:'t', textContent:c.title}));
+    if (c.notes) card.append(el('div', {className:'n', textContent:c.notes}));
+    if (c.due) card.append(el('div', {className:'d' + (isLate(c.due) && col !== state.columns[state.columns.length-1] ? ' late' : ''), textContent:'Prazo: ' + fmtDate(c.due)}));
+    card.onclick = () => openDialog(col.id, c.id);
+    card.onkeydown = e => { if (e.key === 'Enter') openDialog(col.id, c.id); };
+    card.ondragstart = e => { dragId = c.id; e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', c.id); setTimeout(() => card.classList.add('dragging'), 0); };
+    card.ondragend = () => { dragId = null; card.classList.remove('dragging'); document.querySelectorAll('.over').forEach(n => n.classList.remove('over')); };
+    return card;
+  }
+
+  function findCard(id){
+    for (const col of state.columns){
+      const i = col.cards.findIndex(c => c.id === id);
+      if (i > -1) return {col, i, card:col.cards[i]};
+    }
+    return null;
+  }
+
+  function dropCard(targetCol, list, y){
+    const found = findCard(dragId);
+    if (!found) return;
+    found.col.cards.splice(found.i, 1);
+    // posição: antes do primeiro cartão visível cujo centro está abaixo do mouse
+    const others = [...list.querySelectorAll('.card:not(.dragging)')];
+    const next = others.find(n => { const r = n.getBoundingClientRect(); return y < r.top + r.height/2; });
+    let idx = targetCol.cards.length;
+    if (next) idx = targetCol.cards.findIndex(c => c.id === next.dataset.id);
+    targetCol.cards.splice(idx, 0, found.card);
+    dragId = null; save(); render();
+  }
+
+  function addColumn(){
+    const name = prompt('Nome da nova coluna:');
+    if (name && name.trim()){ state.columns.push({id:uid(), title:name.trim(), cards:[]}); save(); render(); }
+  }
+
+  function openDialog(colId, cardId){
+    editing = {colId, cardId};
+    const sel = $('f-col');
+    sel.replaceChildren(...state.columns.map(c => el('option', {value:c.id, textContent:c.title})));
+    const found = cardId ? findCard(cardId) : null;
+    const c = found ? found.card : {title:'', notes:'', prio:'', due:''};
+    $('f-title').value = c.title; $('f-notes').value = c.notes || '';
+    $('f-prio').value = c.prio || ''; $('f-due').value = c.due || '';
+    sel.value = colId;
+    $('f-del').style.display = cardId ? '' : 'none';
+    dlg.showModal();
+    $('f-title').focus();
+  }
+
+  $('form').addEventListener('submit', () => {
+    const data = {title:$('f-title').value.trim(), notes:$('f-notes').value.trim(), prio:$('f-prio').value, due:$('f-due').value};
+    if (!data.title) return;
+    const target = state.columns.find(c => c.id === $('f-col').value);
+    if (editing.cardId){
+      const f = findCard(editing.cardId);
+      Object.assign(f.card, data);
+      if (f.col !== target){ f.col.cards.splice(f.i, 1); target.cards.push(f.card); }
+    } else {
+      target.cards.push({id:uid(), ...data});
+    }
+    save(); render();
+  });
+  $('f-cancel').onclick = () => dlg.close();
+  $('f-del').onclick = () => {
+    if (!confirm('Excluir este cartão?')) return;
+    const f = findCard(editing.cardId);
+    if (f) f.col.cards.splice(f.i, 1);
+    dlg.close(); save(); render();
+  };
+
+  $('search').oninput = e => { query = e.target.value; render(); };
+
+  // Tema
+  const root = document.documentElement;
+  const savedTheme = localStorage.getItem('kanban:theme');
+  if (savedTheme) root.dataset.theme = savedTheme;
+  $('theme').onclick = () => {
+    const dark = root.dataset.theme ? root.dataset.theme === 'dark' : matchMedia('(prefers-color-scheme: dark)').matches;
+    root.dataset.theme = dark ? 'light' : 'dark';
+    try { localStorage.setItem('kanban:theme', root.dataset.theme); } catch(e){}
+  };
+
+  // Exportar / importar
+  $('export').onclick = () => {
+    const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+    const a = el('a', {href:URL.createObjectURL(blob), download:'kanban-' + new Date().toISOString().slice(0,10) + '.json'});
+    a.click(); URL.revokeObjectURL(a.href);
+  };
+  $('import').onclick = () => $('file').click();
+  $('file').onchange = async e => {
+    const f = e.target.files[0]; e.target.value = '';
+    if (!f) return;
+    try {
+      const data = JSON.parse(await f.text());
+      if (!Array.isArray(data.columns)) throw new Error();
+      if (!confirm('Importar substitui o quadro atual. Continuar?')) return;
+      state = data; save(); render();
+    } catch(err){ alert('Arquivo inválido. Use um JSON exportado por este Kanban.'); }
+  };
+
+  render();
+})();
+</script>
+</body>
+</html>
